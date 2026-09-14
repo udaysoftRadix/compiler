@@ -6,6 +6,7 @@ interface EditorPaneProps {
   file: ProjectFile;
   onChange: (content: string) => void;
   onRun?: () => void;
+  language?: string;
 }
 
 function languageForFile(name: string): string {
@@ -27,7 +28,7 @@ function languageForFile(name: string): string {
   }
 }
 
-export function EditorPane({ file, onChange, onRun }: EditorPaneProps) {
+export function EditorPane({ file, onChange, onRun, language }: EditorPaneProps) {
   const onRunRef = useRef(onRun);
   useEffect(() => {
     onRunRef.current = onRun;
@@ -41,7 +42,7 @@ export function EditorPane({ file, onChange, onRun }: EditorPaneProps) {
     <Editor
       key={file.name}
       height="100%"
-      language={languageForFile(file.name)}
+      language={language ?? languageForFile(file.name)}
       value={file.content}
       theme="vs-dark"
       onChange={(value) => onChange(value ?? '')}

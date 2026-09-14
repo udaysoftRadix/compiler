@@ -1,7 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ReactCompilerPage } from './pages/ReactCompilerPage';
 import { JsCompilerPage } from './pages/JsCompilerPage';
-import { CCompilerPage } from './pages/CCompilerPage';
+import { CompilerPage } from './pages/CompilerPage';
+import { defaultLanguageId } from './data/languages';
 import './App.css';
 
 export default function App() {
@@ -11,7 +12,8 @@ export default function App() {
         <Route path="/" element={<Navigate to="/react" replace />} />
         <Route path="/react" element={<ReactCompilerPage />} />
         <Route path="/js" element={<JsCompilerPage />} />
-        <Route path="/c" element={<CCompilerPage />} />
+        <Route path="/c" element={<Navigate to={`/compiler/${defaultLanguageId}`} replace />} />
+        <Route path="/compiler/:language" element={<CompilerPage />} />
         <Route path="*" element={<Navigate to="/react" replace />} />
       </Routes>
     </BrowserRouter>

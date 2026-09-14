@@ -1,8 +1,8 @@
-# Online Code Compiler — React, JavaScript & C
+# Online Code Compiler — React, JavaScript & 25 Other Languages
 
-An in-browser coding platform with three modes, each on its own route, with
-different execution models suited to what they're for. All three default to
-a plain **Hello World** on first visit.
+An in-browser coding platform with several execution models suited to what
+each language is for. Every mode defaults to a plain **Hello World** on
+first visit.
 
 - **`/react`** — a JSX/TSX component playground with a **live rendered
   preview**. Components import each other and `react`/`react-dom`; the
@@ -17,15 +17,33 @@ a plain **Hello World** on first visit.
   in a **Web Worker**, so an infinite loop hangs only the run, never the
   page — a visible **Stop** button and an 8s hard timeout ("time limit
   exceeded") both recover from it.
-- **`/c`** — a judge-style **C compiler**, same Input/Output/Run UI as the JS
-  mode. Real C compilation can't happen client-side without shipping a
-  multi-hundred-MB clang/lld WASM toolchain, so this mode sends your source
-  and stdin to [Compiler Explorer](https://godbolt.org)'s public, keyless
-  execute API (the same kind of sandboxed backend real online C compilers
-  use) and streams back stdout/stderr/compiler diagnostics. This mode needs
-  network access; the other two are fully client-side/offline-capable.
+- **`/compiler/:language`** — the same judge-style Input/Output/Run UI, for
+  **25 other languages**: C, C++, C#, Java, Kotlin, Python, Ruby, Perl, Lua,
+  Go, Rust, Swift, Objective-C, D, Haskell, OCaml, Pascal, Ada, Dart,
+  Crystal, Julia, Zig, COBOL, F#, and Visual Basic .NET. A language switcher
+  in the toolbar jumps straight to any of them. `/c` redirects here for
+  backward compatibility. Real compilation for this many languages can't
+  happen client-side without shipping a huge native toolchain per language,
+  so this mode sends source + stdin to
+  [Compiler Explorer](https://godbolt.org)'s public, keyless execute API
+  (the same kind of sandboxed backend real online compilers use) and
+  streams back stdout/stderr/compiler diagnostics. This mode needs network
+  access; React and JS are fully client-side/offline-capable.
 
-`/` redirects to `/react`. A nav switcher in the toolbar moves between all three.
+`/` redirects to `/react`. A nav switcher in the toolbar moves between all of these.
+
+> **Note on language coverage:** "all languages" isn't literal — it's
+> bounded by what a free, keyless, CORS-enabled execution API will run.
+> PHP isn't offered by Compiler Explorer at all. Erlang, Nim, Scala, and
+> Clojure are listed there but their execution step is currently broken on
+> that backend (missing binaries / runtime classpath) independent of
+> anything in this app, so they were tested and dropped rather than shipped
+> broken. paiza.io was tried first — it has a much simpler language-name API
+> and initially looked like a good fit — but it sends no
+> `Access-Control-Allow-Origin` header, so browsers block it outright; it
+> only "works" from curl/servers, never from client-side `fetch`. That's why
+> Compiler Explorer is the backend here even for C, which originally used a
+> different one.
 
 ## Features
 
@@ -35,7 +53,6 @@ Shared:
   **Download**, **Reset** to defaults
 - Per-mode `localStorage`, so switching tabs doesn't clobber another
   playground's work
-- Starter templates per mode
 
 React (`/react`) specific:
 - Multi-file projects — local files `import` each other and `react`/`react-dom`
@@ -56,14 +73,12 @@ JS (`/js`) specific:
 - Templates: Hello World, Reading Input, Two Sum, Bubble Sort (multi-file),
   Fibonacci Series, Palindrome Check
 
-C (`/c`) specific:
-- Single `main.c` file, `scanf`/stdin via the Input panel, Run/Stop, and the
-  same status-badged Output panel as JS mode
-- Real `gcc` compilation and execution via Compiler Explorer — genuine
-  compiler diagnostics (with file/line context) on syntax errors, real
-  stdout/stderr/exit codes on success
-- Templates: Hello World, Reading Input, Sum of Two Numbers, Factorial
-  (recursion), Bubble Sort
+Other languages (`/compiler/:language`) specific:
+- Single source file per language, real compiler diagnostics (with file/line
+  context where the compiler provides it) on failure, real stdout/stderr on
+  success
+- Same Run/Stop + status-badged Output panel as JS mode; a 25s client-side
+  timeout backstops the service's own ~20s execution limit
 
 ## How it works
 
@@ -84,12 +99,15 @@ modules through a small CommonJS-style `require()` so local files can
   events back to the page for the Output panel. Stop (or the timeout)
   terminates the worker outright.
 
-**C mode** works differently since it needs a real compiler: on Run, the
-source and Input box text are POSTed to Compiler Explorer's execute API
-(`https://godbolt.org/api/compiler/<id>/compile`, `filters.execute: true`).
-The response's build diagnostics (on a compile failure) or stdout/stderr (on
-success) are rendered into the Output panel; the client also enforces its
-own timeout via `AbortController` as a backstop alongside the service's own.
+**The other-languages mode** works differently since it needs real
+compilers: on Run, the source and Input box text are POSTed to Compiler
+Explorer's execute API (`https://godbolt.org/api/compiler/<id>/compile`,
+`filters.execute: true`), where `<id>` is a specific compiler version picked
+per language in `src/data/languages.ts` (e.g. `cg151` for C, `python314` for
+Python). The response's build diagnostics (on a compile failure) or
+stdout/stderr (on success) are rendered into the Output panel; the client
+also enforces its own timeout via `AbortController` as a backstop alongside
+the service's own.
 
 ## Getting started
 
@@ -109,15 +127,19 @@ npm run preview
 
 - `src/compiler/` — Babel transpilation, bundle assembly, the iframe
   runtime/document (React mode), the Web Worker runtime (JS mode), and the
-  remote-execution client (C mode)
+  Compiler Explorer client (`runOnCompilerExplorer.ts`, used by every other
+  language)
 - `src/components/` — editor, file tabs, toolbar (shared); preview/console
-  (React mode); input/output panels (JS & C modes)
+  (React mode); input/output panels (JS & other-language modes)
 - `src/pages/CompilerWorkspace.tsx` + `ReactCompilerPage.tsx` — the React
   mode's layout/state, mounted at `/react`
 - `src/pages/JsCompilerPage.tsx` — the JS mode's layout/state (Run/Stop,
   stdin/stdout), mounted at `/js`
-- `src/pages/CCompilerPage.tsx` — the C mode's layout/state, mounted at `/c`
-- `src/data/reactTemplates.ts` / `jsTemplates.ts` / `cTemplates.ts` —
-  starter templates per mode (index 0 is always Hello World, the default)
+- `src/pages/CompilerPage.tsx` — the generic per-language layout/state,
+  mounted at `/compiler/:language`; falls back to C on an unknown language id
+- `src/data/reactTemplates.ts` / `jsTemplates.ts` — starter templates for
+  React and JS
+- `src/data/languages.ts` — the 25 supported languages: route id, Compiler
+  Explorer compiler id, Monaco syntax-highlighting id, filename, and a
+  verified Hello World template for each
 - `src/App.tsx` — router shell (`react-router-dom`)
-# compiler

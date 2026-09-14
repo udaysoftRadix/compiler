@@ -1,8 +1,12 @@
-// Real C compilation can't run client-side without shipping an enormous
-// clang/lld WASM toolchain, so this mode sends source to Compiler Explorer's
-// public, CORS-open, keyless execute API (https://godbolt.org) — the same
-// kind of sandboxed-execution backend real online C compilers use.
-const ENDPOINT = 'https://godbolt.org/api/compiler/cg151/compile';
+// Real compilers for two dozen-plus languages can't run client-side, so
+// this sends code to Compiler Explorer's (https://godbolt.org) public,
+// CORS-open, keyless execute API — the same kind of sandboxed-execution
+// backend real online compilers use.
+//
+// (paiza.io was tried first and has a nicer language-name-based API, but it
+// sends no Access-Control-Allow-Origin header, so browsers block it outright
+// — it only "works" from curl/servers, never from client-side fetch.)
+const ENDPOINT_BASE = 'https://godbolt.org/api/compiler';
 const CLIENT_TIMEOUT_MS = 25000;
 
 interface OutputLine {
@@ -43,7 +47,7 @@ function lineText(line: OutputLine): string {
   return stripAnsi(line.tag?.text ?? line.text);
 }
 
-export function runCCode(source: string, stdin: string, callbacks: RunCallbacks): RunController {
+export function runOnCompilerExplorer(compilerId: string, source: string, stdin: string, callbacks: RunCallbacks): RunController {
   const controller = new AbortController();
   const startedAt = Date.now();
   let settled = false;
@@ -92,7 +96,7 @@ export function runCCode(source: string, stdin: string, callbacks: RunCallbacks)
     finish(false);
   }
 
-  fetch(ENDPOINT, {
+  fetch(`${ENDPOINT_BASE}/${encodeURIComponent(compilerId)}/compile`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     signal: controller.signal,

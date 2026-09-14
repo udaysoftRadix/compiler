@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
+import { Navigate, useParams } from 'react-router-dom';
 import { Toolbar } from '../components/Toolbar';
 import { EditorPane } from '../components/EditorPane';
 import { InputPanel } from '../components/InputPanel';
 import { OutputPanel } from '../components/OutputPanel';
-import { runCCode, type RunController } from '../compiler/runCCode';
-import { cTemplates, defaultCTemplate } from '../data/cTemplates';
+import { runOnCompilerExplorer, type RunController } from '../compiler/runOnCompilerExplorer';
+import { getLanguage, defaultLanguageId, type LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import type { ConsoleEntry } from '../types';
 import '../App.css';
-
-const CODE_KEY = 'c-compiler-code-v1';
-const INPUT_KEY = 'c-compiler-input-v1';
 
 interface SharedPayload {
   code: string;
   input: string;
 }
 
-function loadInitial(): SharedPayload {
+function loadInitial(lang: LanguageDef): SharedPayload {
   const hash = window.location.hash.replace(/^#/, '');
   if (hash) {
     const fromHash = decodeFromHash<SharedPayload>(hash);
@@ -27,8 +25,8 @@ function loadInitial(): SharedPayload {
   }
 
   try {
-    const storedCode = window.localStorage.getItem(CODE_KEY);
-    const storedInput = window.localStorage.getItem(INPUT_KEY);
+    const storedCode = window.localStorage.getItem(`lang-compiler-${lang.id}-code-v1`);
+    const storedInput = window.localStorage.getItem(`lang-compiler-${lang.id}-input-v1`);
     if (storedCode) {
       return { code: storedCode, input: storedInput ?? '' };
     }
@@ -36,11 +34,22 @@ function loadInitial(): SharedPayload {
     // ignore malformed storage
   }
 
-  return { code: defaultCTemplate.files[0].content, input: '' };
+  return { code: lang.template, input: '' };
 }
 
-export function CCompilerPage() {
-  const initial = useRef(loadInitial());
+export function CompilerPage() {
+  const { language } = useParams<{ language: string }>();
+  const lang = getLanguage(language);
+
+  if (!lang) {
+    return <Navigate to={`/compiler/${defaultLanguageId}`} replace />;
+  }
+
+  return <LanguageWorkspace key={lang.id} lang={lang} />;
+}
+
+function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
+  const initial = useRef(loadInitial(lang));
   const [code, setCode] = useState(initial.current.code);
   const [input, setInput] = useState(initial.current.input);
   const [output, setOutput] = useState<ConsoleEntry[]>([]);
@@ -52,13 +61,16 @@ export function CCompilerPage() {
   const runControllerRef = useRef<RunController | null>(null);
   const entryIdRef = useRef(0);
 
-  useEffect(() => {
-    window.localStorage.setItem(CODE_KEY, code);
-  }, [code]);
+  const codeKey = `lang-compiler-${lang.id}-code-v1`;
+  const inputKey = `lang-compiler-${lang.id}-input-v1`;
 
   useEffect(() => {
-    window.localStorage.setItem(INPUT_KEY, input);
-  }, [input]);
+    window.localStorage.setItem(codeKey, code);
+  }, [code, codeKey]);
+
+  useEffect(() => {
+    window.localStorage.setItem(inputKey, input);
+  }, [input, inputKey]);
 
   useEffect(() => {
     return () => runControllerRef.current?.stop();
@@ -79,7 +91,7 @@ export function CCompilerPage() {
     setElapsedMs(null);
     setStatus('running');
 
-    runControllerRef.current = runCCode(code, input, {
+    runControllerRef.current = runOnCompilerExplorer(lang.compilerId, code, input, {
       onConsole: (level, text) => appendOutput(level, text),
       onDone: ({ elapsedMs: ms, timedOut }) => {
         setElapsedMs(ms);
@@ -93,19 +105,9 @@ export function CCompilerPage() {
     runControllerRef.current?.stop();
   }
 
-  function loadTemplate(templateId: string) {
-    const template = cTemplates.find((t) => t.id === templateId);
-    if (!template) return;
-    if (!window.confirm(`Load "${template.label}"? This will replace your current code.`)) return;
-    setCode(template.files[0].content);
-    setInput('');
-    setOutput([]);
-    setStatus('idle');
-  }
-
   function resetProject() {
-    if (!window.confirm('Reset to the default template? Unsaved changes will be lost.')) return;
-    setCode(defaultCTemplate.files[0].content);
+    if (!window.confirm('Reset to the default Hello World? Unsaved changes will be lost.')) return;
+    setCode(lang.template);
     setInput('');
     setOutput([]);
     setStatus('idle');
@@ -125,11 +127,11 @@ export function CCompilerPage() {
   }
 
   function downloadProject() {
-    const blob = new Blob([code], { type: 'text/x-c' });
+    const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'main.c';
+    a.download = lang.fileName;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -159,9 +161,10 @@ export function CCompilerPage() {
   return (
     <div className="app-shell">
       <Toolbar
-        mode="c"
-        templates={cTemplates}
-        onLoadTemplate={loadTemplate}
+        mode="lang"
+        activeLanguageId={lang.id}
+        activeLanguageLabel={lang.label}
+        activeLanguageIcon={lang.icon}
         onReset={resetProject}
         onShare={shareProject}
         onDownload={downloadProject}
@@ -182,18 +185,18 @@ export function CCompilerPage() {
           <div className="file-tabs">
             <div className="file-tab active">
               <span className="entry-dot" />
-              <span>main.c</span>
+              <span>{lang.fileName}</span>
             </div>
           </div>
           <div className="editor-container">
-            <EditorPane file={{ name: 'main.c', content: code }} onChange={setCode} onRun={handleRun} />
+            <EditorPane file={{ name: lang.fileName, content: code }} onChange={setCode} onRun={handleRun} language={lang.monacoLanguage} />
           </div>
         </div>
 
         <div className="divider" onPointerDown={onDividerPointerDown} />
 
         <div className="pane io-column" style={{ width: `${100 - splitPercent}%` }}>
-          <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nRead it in your code with scanf().'} />
+          <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nThis is fed to your program as stdin.'} />
           <OutputPanel entries={output} status={status} elapsedMs={elapsedMs} onClear={() => setOutput([])} />
         </div>
       </div>
