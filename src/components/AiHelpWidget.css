@@ -164,6 +164,10 @@
 
 .ai-help-segmented button {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   background: transparent;
   border: none;
   color: #94a3b8;
@@ -238,7 +242,7 @@
 }
 
 .ai-help-empty-icon {
-  font-size: 22px;
+  color: #475569;
 }
 
 .ai-turn {
@@ -255,6 +259,9 @@
 }
 
 .ai-turn-user-bubble {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   max-width: 85%;
   background: #4338ca;
   color: #eef2ff;
@@ -263,6 +270,10 @@
   font-size: 13px;
   line-height: 1.5;
   white-space: pre-wrap;
+}
+
+.ai-turn-user-bubble svg {
+  flex-shrink: 0;
 }
 
 .ai-turn-assistant-bubble {
@@ -435,10 +446,14 @@
 }
 
 .code-block-file-icon {
-  font-size: 11px;
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .code-block-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: transparent;
   border: 1px solid #2e3244;
   color: #94a3b8;

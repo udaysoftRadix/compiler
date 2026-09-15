@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { highlightLine } from '../ai/highlight';
 import { extractFilename } from '../ai/codeMeta';
+import { IconCheck, IconCopy, IconFileText } from './icons';
 
 interface CodeBlockProps {
   language?: string;
@@ -26,13 +27,12 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
     <div className="code-block">
       <div className="code-block-header">
         <span className="code-block-filename">
-          <span className="code-block-file-icon" aria-hidden="true">
-            📄
-          </span>
+          <IconFileText size={12} className="code-block-file-icon" />
           {label}
         </span>
         <button type="button" className="code-block-copy" onClick={handleCopy}>
-          {copied ? '✓ Copied' : '⧉ Copy'}
+          {copied ? <IconCheck size={12} /> : <IconCopy size={12} />}
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       <pre className="code-block-body">

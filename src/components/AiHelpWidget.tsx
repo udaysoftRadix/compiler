@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { requestAiHelp, hasApiKey, type AiHelpMode } from '../ai/openrouter';
 import { renderMarkdown } from '../ai/markdown';
+import { IconCheckCircle, IconLightbulb, IconMaximize, IconMinimize, IconSend, IconSparkles, IconX } from './icons';
 import './AiHelpWidget.css';
 
 interface AiHelpWidgetProps {
@@ -18,8 +19,8 @@ interface Turn {
 }
 
 const MODE_LABEL: Record<AiHelpMode, string> = {
-  hint: '💡 Hint requested',
-  solution: '✅ Full solution requested',
+  hint: 'Hint requested',
+  solution: 'Full solution requested',
   ask: '',
 };
 
@@ -80,14 +81,16 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
   return (
     <>
       <button className="ai-help-fab" onClick={() => setOpen((o) => !o)} title="AI help" aria-label="Toggle AI help">
-        {open ? '✕' : '🤖'}
+        {open ? <IconX size={20} /> : <IconSparkles size={20} />}
       </button>
 
       {open && (
         <div className={`ai-help-panel ${expanded ? 'expanded' : ''}`}>
           <div className="ai-help-header">
             <div className="ai-help-header-title">
-              <span className="ai-help-header-icon">🤖</span>
+              <span className="ai-help-header-icon">
+                <IconSparkles size={14} />
+              </span>
               <span>AI Assistant</span>
             </div>
             <div className="ai-help-header-right">
@@ -101,10 +104,10 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
                 aria-label={expanded ? 'Collapse panel' : 'Expand panel'}
                 title={expanded ? 'Collapse' : 'Expand'}
               >
-                {expanded ? '⤡' : '⤢'}
+                {expanded ? <IconMinimize size={14} /> : <IconMaximize size={14} />}
               </button>
               <button className="ai-help-close" onClick={() => setOpen(false)} aria-label="Close">
-                ✕
+                <IconX size={14} />
               </button>
             </div>
           </div>
@@ -115,28 +118,36 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
               disabled={loading}
               onClick={() => runRequest('hint')}
             >
-              💡 Hint
+              <IconLightbulb size={14} />
+              Hint
             </button>
             <button
               className={activeMode === 'solution' ? 'active' : ''}
               disabled={loading}
               onClick={() => runRequest('solution')}
             >
-              ✓ Full Solution
+              <IconCheckCircle size={14} />
+              Full Solution
             </button>
           </div>
 
           <div className="ai-help-body" ref={scrollRef}>
             {turns.length === 0 && !loading && (
               <div className="ai-help-empty">
-                <span className="ai-help-empty-icon">✨</span>
+                <IconSparkles size={22} className="ai-help-empty-icon" />
                 Stuck? Ask for a hint, the full solution, or type a question below.
               </div>
             )}
 
             {turns.map((turn) => (
               <div className={`ai-turn ai-turn-${turn.role}`} key={turn.id}>
-                {turn.role === 'user' && <div className="ai-turn-user-bubble">{turn.text}</div>}
+                {turn.role === 'user' && (
+                  <div className="ai-turn-user-bubble">
+                    {turn.mode === 'hint' && <IconLightbulb size={13} />}
+                    {turn.mode === 'solution' && <IconCheckCircle size={13} />}
+                    {turn.text}
+                  </div>
+                )}
                 {turn.role === 'assistant' && (
                   <div className="ai-turn-assistant-bubble">
                     <div className="ai-markdown">{renderMarkdown(turn.text)}</div>
@@ -178,7 +189,7 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
               aria-label="Send"
               title="Send (Enter)"
             >
-              ➤
+              <IconSend size={15} />
             </button>
           </div>
         </div>
