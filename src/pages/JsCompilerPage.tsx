@@ -4,6 +4,7 @@ import { FileTabs } from '../components/FileTabs';
 import { EditorPane } from '../components/EditorPane';
 import { InputPanel } from '../components/InputPanel';
 import { OutputPanel } from '../components/OutputPanel';
+import { AiHelpWidget } from '../components/AiHelpWidget';
 import { buildBundle } from '../compiler/buildBundle';
 import { runJsInWorker, type RunController } from '../compiler/runJsInWorker';
 import { jsTemplates, defaultJsTemplate } from '../data/jsTemplates';
@@ -257,6 +258,15 @@ export function JsCompilerPage() {
           <OutputPanel entries={output} status={status} elapsedMs={elapsedMs} onClear={() => setOutput([])} />
         </div>
       </div>
+
+      <AiHelpWidget
+        language="JavaScript"
+        code={files.map((f) => `// ${f.name}\n${f.content}`).join('\n\n')}
+        consoleOutput={output
+          .slice(-20)
+          .map((e) => `[${e.level}] ${e.text}`)
+          .join('\n')}
+      />
     </div>
   );
 }

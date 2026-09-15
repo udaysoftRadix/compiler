@@ -4,6 +4,7 @@ import { Toolbar } from '../components/Toolbar';
 import { EditorPane } from '../components/EditorPane';
 import { InputPanel } from '../components/InputPanel';
 import { OutputPanel } from '../components/OutputPanel';
+import { AiHelpWidget } from '../components/AiHelpWidget';
 import { runOnCompilerExplorer, type RunController } from '../compiler/runOnCompilerExplorer';
 import { getLanguage, defaultLanguageId, type LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
@@ -200,6 +201,15 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
           <OutputPanel entries={output} status={status} elapsedMs={elapsedMs} onClear={() => setOutput([])} />
         </div>
       </div>
+
+      <AiHelpWidget
+        language={lang.label}
+        code={code}
+        consoleOutput={output
+          .slice(-20)
+          .map((e) => `[${e.level}] ${e.text}`)
+          .join('\n')}
+      />
     </div>
   );
 }

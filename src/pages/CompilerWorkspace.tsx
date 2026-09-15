@@ -4,6 +4,7 @@ import { FileTabs } from '../components/FileTabs';
 import { EditorPane } from '../components/EditorPane';
 import { PreviewPane } from '../components/PreviewPane';
 import { ConsolePanel } from '../components/ConsolePanel';
+import { AiHelpWidget } from '../components/AiHelpWidget';
 import { buildBundle } from '../compiler/buildBundle';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { decodeFilesFromHash, encodeFilesToHash } from '../utils/share';
@@ -235,6 +236,15 @@ export function CompilerWorkspace({ mode, templates, defaultTemplate, storageKey
           />
         </div>
       </div>
+
+      <AiHelpWidget
+        language={mode === 'react' ? 'React (JSX/TSX)' : 'JavaScript'}
+        code={files.map((f) => `// ${f.name}\n${f.content}`).join('\n\n')}
+        consoleOutput={consoleEntries
+          .slice(-20)
+          .map((e) => `[${e.level}] ${e.text}`)
+          .join('\n')}
+      />
     </div>
   );
 }
