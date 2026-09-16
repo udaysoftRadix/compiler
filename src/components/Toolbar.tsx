@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { languages } from '../data/languages';
+import { LanguageSelect } from './LanguageSelect';
 import type { Template } from '../types';
 
 type CompilerMode = 'react' | 'js' | 'lang';
@@ -57,20 +58,12 @@ export function Toolbar({
         <NavLink to="/js" className={({ isActive }) => `toolbar-nav-link ${isActive ? 'active' : ''}`}>
           JavaScript
         </NavLink>
-        <select
-          className={`toolbar-nav-lang-select ${mode === 'lang' ? 'active' : ''}`}
-          value={mode === 'lang' ? (activeLanguageId ?? '') : ''}
-          onChange={(e) => e.target.value && navigate(`/compiler/${e.target.value}`)}
-        >
-          <option value="" disabled>
-            {mode === 'lang' ? 'Switch language…' : 'More languages…'}
-          </option>
-          {languages.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.label}
-            </option>
-          ))}
-        </select>
+        <LanguageSelect
+          languages={languages}
+          activeId={activeLanguageId}
+          isActiveMode={mode === 'lang'}
+          onSelect={(id) => navigate(`/compiler/${id}`)}
+        />
       </nav>
 
       <div className="toolbar-actions">

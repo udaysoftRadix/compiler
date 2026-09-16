@@ -78,24 +78,6 @@
   color: #e2e8f0;
 }
 
-.toolbar-nav-lang-select {
-  padding: 5px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #94a3b8;
-  background: transparent;
-  border: none;
-}
-
-.toolbar-nav-lang-select:hover {
-  color: #e2e8f0;
-}
-
-.toolbar-nav-lang-select.active {
-  background: #2e3244;
-  color: #e2e8f0;
-}
-
 .toolbar-actions {
   display: flex;
   align-items: center;
