@@ -26,16 +26,17 @@ const MODE_LABEL: Record<AiHelpMode, string> = {
 
 let nextId = 0;
 
-function playErrorSound() {
-  try {
-    const audio = new Audio('/audio/error.mp3');
-    void audio.play().catch(() => {
-      // autoplay blocked or file unavailable; fail silently
-    });
-  } catch {
-    // Audio unsupported in this environment; fail silently
-  }
-}
+// Disabled for now.
+// function playErrorSound() {
+//   try {
+//     const audio = new Audio('/audio/error.mp3');
+//     void audio.play().catch(() => {
+//       // autoplay blocked or file unavailable; fail silently
+//     });
+//   } catch {
+//     // Audio unsupported in this environment; fail silently
+//   }
+// }
 
 export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProps) {
   const [open, setOpen] = useState(false);
@@ -68,7 +69,7 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setTurns((prev) => [...prev, { id: `t${nextId++}`, role: 'error', mode, text: message }]);
-      playErrorSound();
+      // playErrorSound();
     } finally {
       setLoading(false);
     }
@@ -166,7 +167,7 @@ export function AiHelpWidget({ language, code, consoleOutput }: AiHelpWidgetProp
                     {turn.model && <div className="ai-help-model">via {turn.model}</div>}
                   </div>
                 )}
-                {turn.role === 'error' && <pre className="ai-help-error">{turn.text}</pre>}
+                {turn.role === 'error' && <div className="ai-help-error">{turn.text}</div>}
               </div>
             ))}
 

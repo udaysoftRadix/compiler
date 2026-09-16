@@ -86,6 +86,14 @@ function buildMessages({ mode, language, code, consoleOutput, question }: AiHelp
   ];
 }
 
+class ModelCallError extends Error {
+  status?: number;
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 async function callModel(model: string, messages: unknown, apiKey: string, signal: AbortSignal): Promise<string> {
   const res = await fetch(ENDPOINT, {
     method: 'POST',
@@ -100,13 +108,13 @@ async function callModel(model: string, messages: unknown, apiKey: string, signa
   });
 
   if (!res.ok) {
-    throw new AiHelpError(`HTTP ${res.status}`);
+    throw new ModelCallError(`HTTP ${res.status}`, res.status);
   }
 
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== 'string' || !content.trim()) {
-    throw new AiHelpError('Empty response');
+    throw new ModelCallError('Empty response');
   }
   return content;
 }
@@ -114,11 +122,11 @@ async function callModel(model: string, messages: unknown, apiKey: string, signa
 export async function requestAiHelp(request: AiHelpRequest): Promise<AiHelpResult> {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new AiHelpError('Missing VITE_OPENROUTER_API_KEY. Add it to your .env file and restart the dev server.');
+    throw new AiHelpError("AI help isn't set up yet. Ask whoever runs this deployment to add an OpenRouter API key.");
   }
 
   const messages = buildMessages(request);
-  const errors: string[] = [];
+  const errors: { model: string; status?: number; message: string }[] = [];
 
   for (const { model } of OPENROUTER_FALLBACK_MODELS) {
     const controller = new AbortController();
@@ -129,10 +137,18 @@ export async function requestAiHelp(request: AiHelpRequest): Promise<AiHelpResul
       return { content, model };
     } catch (err) {
       clearTimeout(timer);
+      const status = err instanceof ModelCallError ? err.status : undefined;
       const message = err instanceof Error ? err.message : String(err);
-      errors.push(`${model}: ${message}`);
+      errors.push({ model, status, message });
     }
   }
 
-  throw new AiHelpError(`All models failed.\n${errors.join('\n')}`);
+  console.error('[AI help] every fallback model failed:', errors);
+
+  const allRateLimited = errors.length > 0 && errors.every((e) => e.status === 429);
+  throw new AiHelpError(
+    allRateLimited
+      ? "We've hit today's free AI usage limit. Please try again later."
+      : "Couldn't reach the AI assistant right now. Please try again in a moment.",
+  );
 }
