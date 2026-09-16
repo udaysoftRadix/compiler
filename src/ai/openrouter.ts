@@ -75,7 +75,12 @@ function buildMessages({ mode, language, code, consoleOutput, question }: AiHelp
   return [
     {
       role: 'system',
-      content: `You are a coding assistant embedded in an online code editor. Answer the user question about their code concisely and helpfully. ${formatting}`,
+      content:
+        'You are a coding assistant embedded in an online code editor. Only answer questions about the code shown below, ' +
+        'the language/framework it uses, debugging it, or programming concepts directly relevant to it. ' +
+        'If the question is unrelated to programming or this code (general trivia, products, people, etc.), do NOT answer it — ' +
+        'reply with exactly one short sentence saying you can only help with the code in the editor, and nothing else. ' +
+        `${formatting}`,
     },
     { role: 'user', content: `${context}\n\nQuestion: ${question ?? ''}` },
   ];
