@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { languages } from '../data/languages';
 import { LanguageSelect } from './LanguageSelect';
 import { LanguageIcon } from './LanguageIcon';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import type { Template } from '../types';
 
 type CompilerMode = 'react' | 'js' | 'lang';
@@ -22,7 +23,7 @@ interface ToolbarProps {
 
 const FIXED_BRAND: Record<'react' | 'js', { icon: ReactNode; label: string }> = {
   react: { icon: '⚛', label: 'React Compiler' },
-  js: { icon: '{ }', label: 'JS Compiler' },
+  js: { icon: '{ }', label: 'JavaScript Compiler' },
 };
 
 export function Toolbar({
@@ -39,6 +40,8 @@ export function Toolbar({
 }: ToolbarProps) {
   const navigate = useNavigate();
   const brand = mode === 'lang' ? { icon: <LanguageIcon id={activeLanguageId} size={20} />, label: `${activeLanguageLabel ?? 'Language'} Compiler` } : FIXED_BRAND[mode];
+
+  useDocumentTitle(brand.label);
 
   return (
     <div className="toolbar">
