@@ -304,10 +304,7 @@ End Module
     monacoLanguage: 'sql',
     fileName: 'query.sql',
     template: `-- Customers, Orders and Shippings are preloaded on every run.
-SELECT c.first_name, c.last_name, o.item, o.amount
-FROM Customers c
-JOIN Orders o ON o.customer_id = c.customer_id
-ORDER BY o.amount DESC;
+SELECT * FROM Customers;
 `,
   },
 ];
