@@ -1,0 +1,13 @@
+/* Light tile so dark logos (Rust, Ada, ...) stay visible on the dark UI. */
+.lang-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #e8ecf4;
+  border-radius: 6px;
+}
+
+.lang-icon img {
+  display: block;
+}

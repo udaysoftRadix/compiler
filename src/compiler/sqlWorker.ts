@@ -1,5 +1,6 @@
 import initSqlJs from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
+import { SQL_SEED } from './sqlSeed';
 
 export type SqlWorkerMessage =
   | { type: 'rows'; columns: string[]; rows: unknown[][]; totalRows: number }
@@ -19,6 +20,7 @@ self.onmessage = async (event: MessageEvent<{ source: string }>) => {
     const SQL = await initSqlJs({ locateFile: () => wasmUrl });
     const db = new SQL.Database();
     try {
+      db.run(SQL_SEED);
       for (const stmt of db.iterateStatements(event.data.source)) {
         const columns = stmt.getColumnNames();
         if (columns.length > 0) {

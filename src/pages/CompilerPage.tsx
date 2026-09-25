@@ -169,7 +169,6 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
         mode="lang"
         activeLanguageId={lang.id}
         activeLanguageLabel={lang.label}
-        activeLanguageIcon={lang.icon}
         onReset={resetProject}
         onShare={shareProject}
         onDownload={downloadProject}

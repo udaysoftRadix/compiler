@@ -149,4 +149,5 @@ npm run preview
 - `src/data/languages.ts` — the 26 supported languages: route id, Compiler
   Explorer compiler id (or `runtime: 'sqlite'` for SQL), Monaco syntax-highlighting id, filename, and a
   verified Hello World template for each
+- `src/assets/lang-icons/` — one SVG logo per language (from [devicon](https://devicon.dev), MIT, and [simple-icons](https://simpleicons.org), CC0; Pascal's is a simple monogram), rendered by `LanguageIcon`
 - `src/App.tsx` — router shell (`react-router-dom`)

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import type { LanguageDef } from '../data/languages';
 import { IconCheck, IconChevronDown, IconSearch } from './icons';
+import { LanguageIcon } from './LanguageIcon';
 import './LanguageSelect.css';
 
 interface LanguageSelectProps {
@@ -91,7 +92,7 @@ export function LanguageSelect({ languages, activeId, isActiveMode, onSelect }: 
       >
         {isActiveMode && active ? (
           <>
-            <span className="lang-select-icon">{active.icon}</span>
+            <LanguageIcon id={active.id} size={14} />
             <span>{active.label}</span>
           </>
         ) : (
@@ -127,7 +128,7 @@ export function LanguageSelect({ languages, activeId, isActiveMode, onSelect }: 
                 role="option"
                 aria-selected={isActiveMode && l.id === activeId}
               >
-                <span className="lang-select-icon">{l.icon}</span>
+                <LanguageIcon id={l.id} size={16} />
                 <span className="lang-select-label">{l.label}</span>
                 {isActiveMode && l.id === activeId && <IconCheck size={13} className="lang-select-check" />}
               </button>

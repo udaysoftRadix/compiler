@@ -1,7 +1,6 @@
 interface BaseLanguageDef {
   id: string;
   label: string;
-  icon: string;
   monacoLanguage: string;
   fileName: string;
   template: string;
@@ -26,7 +25,6 @@ export const languages: LanguageDef[] = [
     id: 'c',
     compilerId: 'cg151',
     label: 'C',
-    icon: 'C',
     monacoLanguage: 'c',
     fileName: 'main.c',
     template: `#include <stdio.h>
@@ -41,7 +39,6 @@ int main(void) {
     id: 'cpp',
     compilerId: 'g162',
     label: 'C++',
-    icon: 'C++',
     monacoLanguage: 'cpp',
     fileName: 'main.cpp',
     template: `#include <iostream>
@@ -56,7 +53,6 @@ int main() {
     id: 'csharp',
     compilerId: 'dotnet90csharpcoreclr',
     label: 'C#',
-    icon: '#',
     monacoLanguage: 'csharp',
     fileName: 'Main.cs',
     template: `using System;
@@ -72,7 +68,6 @@ class Program {
     id: 'java',
     compilerId: 'java2501',
     label: 'Java',
-    icon: '☕',
     monacoLanguage: 'java',
     fileName: 'Main.java',
     template: `class Main {
@@ -86,7 +81,6 @@ class Program {
     id: 'kotlin',
     compilerId: 'kotlinc2220',
     label: 'Kotlin',
-    icon: '🎯',
     monacoLanguage: 'kotlin',
     fileName: 'main.kt',
     template: `fun main() {
@@ -98,7 +92,6 @@ class Program {
     id: 'python3',
     compilerId: 'python314',
     label: 'Python',
-    icon: '🐍',
     monacoLanguage: 'python',
     fileName: 'main.py',
     template: `print("Hello, World!")\n`,
@@ -107,7 +100,6 @@ class Program {
     id: 'ruby',
     compilerId: 'ruby347',
     label: 'Ruby',
-    icon: '💎',
     monacoLanguage: 'ruby',
     fileName: 'main.rb',
     template: `puts "Hello, World!"\n`,
@@ -116,7 +108,6 @@ class Program {
     id: 'perl',
     compilerId: 'perl5440',
     label: 'Perl',
-    icon: '🐪',
     monacoLanguage: 'perl',
     fileName: 'main.pl',
     template: `print "Hello, World!\\n";\n`,
@@ -125,7 +116,6 @@ class Program {
     id: 'lua',
     compilerId: 'lua550',
     label: 'Lua',
-    icon: '🌙',
     monacoLanguage: 'lua',
     fileName: 'main.lua',
     template: `print("Hello, World!")\n`,
@@ -134,7 +124,6 @@ class Program {
     id: 'go',
     compilerId: 'gl1260',
     label: 'Go',
-    icon: '🐹',
     monacoLanguage: 'go',
     fileName: 'main.go',
     template: `package main
@@ -150,7 +139,6 @@ func main() {
     id: 'rust',
     compilerId: 'r1980',
     label: 'Rust',
-    icon: '🦀',
     monacoLanguage: 'rust',
     fileName: 'main.rs',
     template: `fn main() {
@@ -162,7 +150,6 @@ func main() {
     id: 'swift',
     compilerId: 'swift633',
     label: 'Swift',
-    icon: '🍎',
     monacoLanguage: 'swift',
     fileName: 'main.swift',
     template: `print("Hello, World!")\n`,
@@ -171,7 +158,6 @@ func main() {
     id: 'objective-c',
     compilerId: 'objcg650',
     label: 'Objective-C',
-    icon: '🍏',
     monacoLanguage: 'objective-c',
     fileName: 'main.m',
     template: `#import <stdio.h>
@@ -186,7 +172,6 @@ int main() {
     id: 'd',
     compilerId: 'dmd21120',
     label: 'D',
-    icon: 'D',
     monacoLanguage: 'plaintext',
     fileName: 'main.d',
     template: `import std.stdio;
@@ -200,7 +185,6 @@ void main() {
     id: 'haskell',
     compilerId: 'ghc9122',
     label: 'Haskell',
-    icon: 'λ',
     monacoLanguage: 'plaintext',
     fileName: 'main.hs',
     template: `main = putStrLn "Hello, World!"\n`,
@@ -209,7 +193,6 @@ void main() {
     id: 'ocaml',
     compilerId: 'ocaml5200',
     label: 'OCaml',
-    icon: '🐫',
     monacoLanguage: 'plaintext',
     fileName: 'main.ml',
     template: `print_endline "Hello, World!"\n`,
@@ -218,7 +201,6 @@ void main() {
     id: 'pascal',
     compilerId: 'fpc322',
     label: 'Pascal',
-    icon: 'P',
     monacoLanguage: 'pascal',
     fileName: 'main.pas',
     template: `program Hello;
@@ -231,7 +213,6 @@ end.
     id: 'ada',
     compilerId: 'gnat162',
     label: 'Ada',
-    icon: 'A',
     monacoLanguage: 'plaintext',
     fileName: 'main.adb',
     template: `with Ada.Text_IO; use Ada.Text_IO;
@@ -245,7 +226,6 @@ end Main;
     id: 'dart',
     compilerId: 'dart373',
     label: 'Dart',
-    icon: '🎯',
     monacoLanguage: 'dart',
     fileName: 'main.dart',
     template: `void main() {
@@ -257,7 +237,6 @@ end Main;
     id: 'crystal',
     compilerId: 'crystal1203',
     label: 'Crystal',
-    icon: '💠',
     monacoLanguage: 'plaintext',
     fileName: 'main.cr',
     template: `puts "Hello, World!"\n`,
@@ -266,7 +245,6 @@ end Main;
     id: 'julia',
     compilerId: 'julia_1_12_5',
     label: 'Julia',
-    icon: '🔴',
     monacoLanguage: 'julia',
     fileName: 'main.jl',
     template: `println("Hello, World!")\n`,
@@ -275,7 +253,6 @@ end Main;
     id: 'zig',
     compilerId: 'z0110',
     label: 'Zig',
-    icon: '⚡',
     monacoLanguage: 'plaintext',
     fileName: 'main.zig',
     template: `const std = @import("std");
@@ -290,7 +267,6 @@ pub fn main() !void {
     id: 'cobol',
     compilerId: 'gcccobol162',
     label: 'COBOL',
-    icon: '🏦',
     monacoLanguage: 'plaintext',
     fileName: 'main.cob',
     template: `       IDENTIFICATION DIVISION.
@@ -304,7 +280,6 @@ pub fn main() !void {
     id: 'fsharp',
     compilerId: 'dotnet90fsharpcoreclr',
     label: 'F#',
-    icon: 'F#',
     monacoLanguage: 'fsharp',
     fileName: 'main.fsx',
     template: `printfn "Hello, World!"\n`,
@@ -313,7 +288,6 @@ pub fn main() !void {
     id: 'vb',
     compilerId: 'dotnet90vbcoreclr',
     label: 'Visual Basic .NET',
-    icon: 'VB',
     monacoLanguage: 'vb',
     fileName: 'main.vb',
     template: `Module Program
@@ -327,21 +301,19 @@ End Module
     id: 'sql',
     runtime: 'sqlite',
     label: 'SQL (SQLite)',
-    icon: 'DB',
     monacoLanguage: 'sql',
     fileName: 'query.sql',
-    template: `CREATE TABLE users (
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  age INTEGER
-);
+    template: `-- Preloaded tables (recreated on every run):
+--   Customers(customer_id, first_name, last_name, age, country)
+--   Orders(order_id, item, amount, customer_id)
+--   Shippings(shipping_id, status, customer)
 
-INSERT INTO users (name, age) VALUES
-  ('Alice', 30),
-  ('Bob', 25),
-  ('Carol', 35);
+SELECT * FROM Customers;
 
-SELECT * FROM users ORDER BY age;
+SELECT c.first_name, c.last_name, o.item, o.amount
+FROM Customers c
+JOIN Orders o ON o.customer_id = c.customer_id
+ORDER BY o.amount DESC;
 `,
   },
 ];
