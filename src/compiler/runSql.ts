@@ -6,7 +6,7 @@
 import type { SqlWorkerMessage, SqlWorkerRequest } from './sqlWorker';
 import type { TableInfo } from './sqlSeed';
 
-export type SqlResult = Exclude<SqlWorkerMessage, { type: 'done' | 'snapshot' }>;
+export type SqlResult = Exclude<SqlWorkerMessage, { type: 'done' | 'snapshot' | 'dump' }>;
 
 export interface SqlSnapshot {
   tables: TableInfo[];
@@ -48,6 +48,7 @@ export function runSql(source: string, db: Uint8Array | null, callbacks: SqlRunC
     if (settled) return;
     const msg = event.data;
     if (msg.type === 'done') finish(false);
+    else if (msg.type === 'dump') return;
     else if (msg.type === 'snapshot') callbacks.onSnapshot({ tables: msg.tables, db: msg.db });
     else callbacks.onResult(msg);
   });
@@ -61,4 +62,45 @@ export function runSql(source: string, db: Uint8Array | null, callbacks: SqlRunC
   worker.postMessage({ source, db } satisfies SqlWorkerRequest);
 
   return { stop: () => finish(false) };
+}
+
+// One-shot helper for export: runs the worker once and resolves with whatever
+// `pick` extracts from its messages.
+function withWorker<T>(request: SqlWorkerRequest, pick: (msg: SqlWorkerMessage) => T | undefined): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./sqlWorker.ts', import.meta.url), { type: 'module' });
+    const timer = setTimeout(() => fail(new Error('Export timed out')), HARD_TIMEOUT_MS);
+    const cleanup = () => {
+      clearTimeout(timer);
+      worker.terminate();
+    };
+    const fail = (err: Error) => {
+      cleanup();
+      reject(err);
+    };
+
+    worker.addEventListener('message', (event: MessageEvent<SqlWorkerMessage>) => {
+      const value = pick(event.data);
+      if (value !== undefined) {
+        cleanup();
+        resolve(value);
+      } else if (event.data.type === 'error') {
+        fail(new Error(event.data.message));
+      }
+    });
+    worker.addEventListener('error', (event) => fail(new Error(event.message || 'Could not start the SQL engine.')));
+    worker.postMessage(request);
+  });
+}
+
+// The whole database as portable SQL (CREATE TABLE + INSERT statements).
+export function exportSqlDump(db: Uint8Array | null): Promise<string> {
+  return withWorker({ source: '', db, mode: 'dump' }, (msg) => (msg.type === 'dump' ? msg.sql : undefined));
+}
+
+// The SQLite database file. Before the first run there is no file yet, so an
+// empty run is used to build the seeded one.
+export function exportDatabaseFile(db: Uint8Array | null): Promise<Uint8Array> {
+  if (db) return Promise.resolve(db);
+  return withWorker({ source: '', db: null }, (msg) => (msg.type === 'snapshot' ? msg.db : undefined));
 }

@@ -2,17 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { Toolbar } from '../components/Toolbar';
 import { EditorPane } from '../components/EditorPane';
 import { ResultTable } from '../components/ResultTable';
+import { ExportMenu } from '../components/ExportMenu';
 import { AiHelpWidget } from '../components/AiHelpWidget';
 import { SqlConfirmDialog } from '../components/SqlConfirmDialog';
 import { statusLabel } from '../utils/statusLabel';
+import { downloadFile, toCsv, toJson } from '../utils/exportData';
 import { IconPanelLeft, IconPanelRight, IconPlay, IconRotateCcw, IconTable } from '../components/icons';
-import { runSql, type SqlResult, type SqlRunController } from '../compiler/runSql';
+import { exportDatabaseFile, exportSqlDump, runSql, type SqlResult, type SqlRunController } from '../compiler/runSql';
 import { SEED_TABLE_INFO, describeSchema, type TableInfo } from '../compiler/sqlSeed';
 import { analyzeSql, type SqlIssue } from '../compiler/sqlAnalysis';
 import type { LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import { clearSqlState, loadSqlState, saveSqlState } from '../utils/sqlStorage';
 import './SqlWorkspace.css';
+
+// Result sets can hold far more rows than are worth rendering; the full set is
+// still kept so it can be exported.
+const DISPLAY_ROWS = 500;
 
 interface SharedPayload {
   code: string;
@@ -227,13 +233,23 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
               {results.length === 0 && !running && <div className="sql-empty">Press Run SQL (or Ctrl+Enter) to execute your query.</div>}
               {results.map((result, i) => {
                 if (result.type === 'rows') {
+                  const label = results.filter((r) => r.type === 'rows').length > 1 ? `result-${results.slice(0, i + 1).filter((r) => r.type === 'rows').length}` : 'query-result';
                   return (
                     <div className="sql-result" key={i}>
-                      <ResultTable columns={result.columns} rows={result.rows} />
-                      <div className="sql-result-meta">
-                        {result.totalRows} row{result.totalRows === 1 ? '' : 's'}
-                        {result.rows.length < result.totalRows && ` (showing first ${result.rows.length})`}
+                      <div className="sql-result-head">
+                        <span className="sql-result-meta">
+                          {result.totalRows} row{result.totalRows === 1 ? '' : 's'}
+                          {result.rows.length > DISPLAY_ROWS && ` (showing first ${DISPLAY_ROWS})`}
+                          {result.totalRows > result.rows.length && ` (export limited to first ${result.rows.length.toLocaleString()})`}
+                        </span>
+                        <ExportMenu
+                          items={[
+                            { label: 'CSV', hint: '.csv', onSelect: () => downloadFile(`${label}.csv`, toCsv(result.columns, result.rows), 'text/csv;charset=utf-8') },
+                            { label: 'JSON', hint: '.json', onSelect: () => downloadFile(`${label}.json`, toJson(result.columns, result.rows), 'application/json') },
+                          ]}
+                        />
                       </div>
+                      <ResultTable columns={result.columns} rows={result.rows.slice(0, DISPLAY_ROWS)} />
                     </div>
                   );
                 }
@@ -258,10 +274,27 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
           <aside className="sql-side sql-tables" aria-label="Available tables">
             <div className="sql-pane-header">
               <span className="sql-pane-title">Available Tables</span>
-              <button className="sql-clear sql-reset" onClick={resetData} disabled={running} title="Restore the original sample tables">
-                <IconRotateCcw size={12} />
-                Reset data
-              </button>
+              <div className="sql-pane-actions">
+                <ExportMenu
+                  disabled={running || tables === null}
+                  items={[
+                    {
+                      label: 'Database file',
+                      hint: '.sqlite',
+                      onSelect: async () => downloadFile('database.sqlite', await exportDatabaseFile(dbRef.current), 'application/vnd.sqlite3'),
+                    },
+                    {
+                      label: 'SQL dump',
+                      hint: '.sql',
+                      onSelect: async () => downloadFile('database.sql', await exportSqlDump(dbRef.current), 'application/sql'),
+                    },
+                  ]}
+                />
+                <button className="sql-clear sql-reset" onClick={resetData} disabled={running} title="Restore the original sample tables">
+                  <IconRotateCcw size={12} />
+                  Reset data
+                </button>
+              </div>
             </div>
             <div className="sql-tables-body">
               {tables?.length === 0 && <div className="sql-empty">The database has no tables.</div>}
