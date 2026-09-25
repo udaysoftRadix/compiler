@@ -134,3 +134,40 @@ export function IconSearch(props: IconProps) {
     </Svg>
   );
 }
+
+export function IconTable(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />
+      <path d="M12 3v18" />
+    </Svg>
+  );
+}
+
+export function IconPanelLeft(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M9 3v18" />
+    </Svg>
+  );
+}
+
+export function IconPanelRight(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M15 3v18" />
+    </Svg>
+  );
+}
+
+export function IconPlay(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <polygon points="6 3 20 12 6 21 6 3" />
+    </Svg>
+  );
+}

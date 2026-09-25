@@ -1,42 +1,87 @@
-// Loaded into the fresh in-memory database before every SQL run, so users can
-// start querying immediately.
-export const SQL_SEED = `
-CREATE TABLE Customers (
-  customer_id INTEGER PRIMARY KEY,
-  first_name TEXT,
-  last_name TEXT,
-  age INTEGER,
-  country TEXT
-);
-INSERT INTO Customers VALUES
-  (1, 'John', 'Doe', 31, 'USA'),
-  (2, 'Robert', 'Luna', 22, 'USA'),
-  (3, 'David', 'Robinson', 22, 'UK'),
-  (4, 'John', 'Reinhardt', 25, 'UK'),
-  (5, 'Betty', 'Doe', 28, 'UAE');
+// Single source of truth for the preloaded SQL tables: the UI panels render
+// SEED_TABLES directly, and SQL_SEED (generated from it) is what the worker
+// runs against each fresh in-memory database before the user's script.
+export interface SeedColumn {
+  name: string;
+  type: 'INTEGER' | 'TEXT';
+  primaryKey?: boolean;
+  references?: string;
+}
 
-CREATE TABLE Orders (
-  order_id INTEGER PRIMARY KEY,
-  item TEXT,
-  amount INTEGER,
-  customer_id INTEGER REFERENCES Customers (customer_id)
-);
-INSERT INTO Orders VALUES
-  (1, 'Keyboard', 400, 4),
-  (2, 'Mouse', 300, 4),
-  (3, 'Monitor', 12000, 3),
-  (4, 'Keyboard', 400, 1),
-  (5, 'Mousepad', 250, 2);
+export interface SeedTable {
+  name: string;
+  columns: SeedColumn[];
+  rows: (string | number)[][];
+}
 
-CREATE TABLE Shippings (
-  shipping_id INTEGER PRIMARY KEY,
-  status TEXT,
-  customer INTEGER REFERENCES Customers (customer_id)
-);
-INSERT INTO Shippings VALUES
-  (1, 'Pending', 2),
-  (2, 'Pending', 4),
-  (3, 'Delivered', 3),
-  (4, 'Pending', 5),
-  (5, 'Delivered', 1);
-`;
+export const SEED_TABLES: SeedTable[] = [
+  {
+    name: 'Customers',
+    columns: [
+      { name: 'customer_id', type: 'INTEGER', primaryKey: true },
+      { name: 'first_name', type: 'TEXT' },
+      { name: 'last_name', type: 'TEXT' },
+      { name: 'age', type: 'INTEGER' },
+      { name: 'country', type: 'TEXT' },
+    ],
+    rows: [
+      [1, 'John', 'Doe', 31, 'USA'],
+      [2, 'Robert', 'Luna', 22, 'USA'],
+      [3, 'David', 'Robinson', 22, 'UK'],
+      [4, 'John', 'Reinhardt', 25, 'UK'],
+      [5, 'Betty', 'Doe', 28, 'UAE'],
+    ],
+  },
+  {
+    name: 'Orders',
+    columns: [
+      { name: 'order_id', type: 'INTEGER', primaryKey: true },
+      { name: 'item', type: 'TEXT' },
+      { name: 'amount', type: 'INTEGER' },
+      { name: 'customer_id', type: 'INTEGER', references: 'Customers (customer_id)' },
+    ],
+    rows: [
+      [1, 'Keyboard', 400, 4],
+      [2, 'Mouse', 300, 4],
+      [3, 'Monitor', 12000, 3],
+      [4, 'Keyboard', 400, 1],
+      [5, 'Mousepad', 250, 2],
+    ],
+  },
+  {
+    name: 'Shippings',
+    columns: [
+      { name: 'shipping_id', type: 'INTEGER', primaryKey: true },
+      { name: 'status', type: 'TEXT' },
+      { name: 'customer', type: 'INTEGER', references: 'Customers (customer_id)' },
+    ],
+    rows: [
+      [1, 'Pending', 2],
+      [2, 'Pending', 4],
+      [3, 'Delivered', 3],
+      [4, 'Pending', 5],
+      [5, 'Delivered', 1],
+    ],
+  },
+];
+
+function literal(value: string | number): string {
+  return typeof value === 'number' ? String(value) : `'${value.replace(/'/g, "''")}'`;
+}
+
+function tableSql(table: SeedTable): string {
+  const columns = table.columns
+    .map((c) => `  ${c.name} ${c.type}${c.primaryKey ? ' PRIMARY KEY' : ''}${c.references ? ` REFERENCES ${c.references}` : ''}`)
+    .join(',\n');
+  const rows = table.rows.map((row) => `  (${row.map(literal).join(', ')})`).join(',\n');
+  return `CREATE TABLE ${table.name} (\n${columns}\n);\nINSERT INTO ${table.name} VALUES\n${rows};`;
+}
+
+export const SQL_SEED = SEED_TABLES.map(tableSql).join('\n\n');
+
+// Given to the AI assistant so it knows the schema even if the user deletes
+// the comment from their script.
+export const SEED_SCHEMA_COMMENT = [
+  '-- Preloaded tables (recreated on every run):',
+  ...SEED_TABLES.map((t) => `--   ${t.name}(${t.columns.map((c) => c.name).join(', ')})`),
+].join('\n');

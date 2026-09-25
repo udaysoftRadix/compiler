@@ -101,10 +101,14 @@ modules through a small CommonJS-style `require()` so local files can
 
 **SQL** is the exception: Compiler Explorer has no SQL, so it runs locally
 on SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js))
-inside a Web Worker. Each Run executes the script against a fresh in-memory
-database; `SELECT` results render as text tables, DML reports rows affected,
-an error stops the script (keeping earlier output), and a 10s hard timeout
-kills runaway queries. No network or Input box is needed for it.
+inside a Web Worker. It gets its own layout: a schema sidebar (left), the
+editor with `SELECT` results rendered as real tables (centre), and an
+"Available Tables" data panel (right); both side panels can be toggled. Every
+Run starts from a fresh in-memory database preloaded with `Customers`,
+`Orders` and `Shippings` (defined in `src/compiler/sqlSeed.ts`, which drives
+both the UI panels and the seed SQL), so changes never carry over. DML reports
+rows affected, an error stops the script (keeping earlier output), and a 10s
+hard timeout kills runaway queries. No network or Input box is needed.
 
 **The other-languages mode** works differently since it needs real
 compilers: on Run, the source and Input box text are POSTed to Compiler

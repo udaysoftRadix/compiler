@@ -5,8 +5,8 @@ import { EditorPane } from '../components/EditorPane';
 import { InputPanel } from '../components/InputPanel';
 import { OutputPanel } from '../components/OutputPanel';
 import { AiHelpWidget } from '../components/AiHelpWidget';
+import { SqlWorkspace } from './SqlWorkspace';
 import { runOnCompilerExplorer, type RunController } from '../compiler/runOnCompilerExplorer';
-import { runSql } from '../compiler/runSql';
 import { getLanguage, defaultLanguageId, type LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import type { ConsoleEntry } from '../types';
@@ -47,10 +47,14 @@ export function CompilerPage() {
     return <Navigate to={`/compiler/${defaultLanguageId}`} replace />;
   }
 
+  if (lang.runtime === 'sqlite') {
+    return <SqlWorkspace key={lang.id} lang={lang} />;
+  }
+
   return <LanguageWorkspace key={lang.id} lang={lang} />;
 }
 
-function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
+function LanguageWorkspace({ lang }: { lang: Extract<LanguageDef, { compilerId: string }> }) {
   const initial = useRef(loadInitial(lang));
   const [code, setCode] = useState(initial.current.code);
   const [input, setInput] = useState(initial.current.input);
@@ -93,17 +97,14 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
     setElapsedMs(null);
     setStatus('running');
 
-    const callbacks = {
+    runControllerRef.current = runOnCompilerExplorer(lang.compilerId, code, input, {
       onConsole: appendOutput,
-      onDone: ({ elapsedMs: ms, timedOut }: { elapsedMs: number; timedOut: boolean }) => {
+      onDone: ({ elapsedMs: ms, timedOut }) => {
         setElapsedMs(ms);
         setStatus(timedOut ? 'timeout' : 'done');
         runControllerRef.current = null;
       },
-    };
-
-    runControllerRef.current =
-      lang.runtime === 'sqlite' ? runSql(code, callbacks) : runOnCompilerExplorer(lang.compilerId, code, input, callbacks);
+    });
   }
 
   function handleStop() {
@@ -200,9 +201,7 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
         <div className="divider" onPointerDown={onDividerPointerDown} />
 
         <div className="pane io-column" style={{ width: `${100 - splitPercent}%` }}>
-          {lang.runtime !== 'sqlite' && (
-            <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nThis is fed to your program as stdin.'} />
-          )}
+          <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nThis is fed to your program as stdin.'} />
           <OutputPanel entries={output} status={status} elapsedMs={elapsedMs} onClear={() => setOutput([])} />
         </div>
       </div>

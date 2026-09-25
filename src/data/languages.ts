@@ -303,13 +303,7 @@ End Module
     label: 'SQL (SQLite)',
     monacoLanguage: 'sql',
     fileName: 'query.sql',
-    template: `-- Preloaded tables (recreated on every run):
---   Customers(customer_id, first_name, last_name, age, country)
---   Orders(order_id, item, amount, customer_id)
---   Shippings(shipping_id, status, customer)
-
-SELECT * FROM Customers;
-
+    template: `-- Customers, Orders and Shippings are preloaded on every run.
 SELECT c.first_name, c.last_name, o.item, o.amount
 FROM Customers c
 JOIN Orders o ON o.customer_id = c.customer_id
