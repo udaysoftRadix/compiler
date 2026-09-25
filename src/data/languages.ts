@@ -303,7 +303,7 @@ End Module
     label: 'SQL (SQLite)',
     monacoLanguage: 'sql',
     fileName: 'query.sql',
-    template: `-- Customers, Orders and Shippings are preloaded on every run.
+    template: `-- Customers, Orders and Shippings are preloaded (use "Reset data" to restore them).
 SELECT * FROM Customers;
 `,
   },

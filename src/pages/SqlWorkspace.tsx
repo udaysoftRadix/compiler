@@ -5,9 +5,9 @@ import { ResultTable } from '../components/ResultTable';
 import { AiHelpWidget } from '../components/AiHelpWidget';
 import { SqlConfirmDialog } from '../components/SqlConfirmDialog';
 import { statusLabel } from '../utils/statusLabel';
-import { IconPanelLeft, IconPanelRight, IconPlay, IconTable } from '../components/icons';
+import { IconPanelLeft, IconPanelRight, IconPlay, IconRotateCcw, IconTable } from '../components/icons';
 import { runSql, type SqlResult, type SqlRunController } from '../compiler/runSql';
-import { SEED_SCHEMA_COMMENT, SEED_TABLES } from '../compiler/sqlSeed';
+import { SEED_TABLE_INFO, describeSchema, type TableInfo } from '../compiler/sqlSeed';
 import { analyzeSql, type SqlIssue } from '../compiler/sqlAnalysis';
 import type { LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
@@ -52,6 +52,8 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   const [showSchema, setShowSchema] = useState(() => window.innerWidth > 1000);
   const [showTables, setShowTables] = useState(() => window.innerWidth > 1000);
   const [pendingIssues, setPendingIssues] = useState<SqlIssue[] | null>(null);
+  const [tables, setTables] = useState<TableInfo[]>(SEED_TABLE_INFO);
+  const dbRef = useRef<Uint8Array | null>(null);
   const controllerRef = useRef<SqlRunController | null>(null);
 
   useEffect(() => {
@@ -73,14 +75,23 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
     setResults([]);
     setElapsedMs(null);
     setStatus('running');
-    controllerRef.current = runSql(code, {
+    controllerRef.current = runSql(code, dbRef.current, {
       onResult: (result) => setResults((prev) => [...prev, result]),
+      onSnapshot: ({ tables: next, db }) => {
+        dbRef.current = db;
+        setTables(next);
+      },
       onDone: ({ elapsedMs: ms, timedOut }) => {
         setElapsedMs(ms);
         setStatus(timedOut ? 'timeout' : 'done');
         controllerRef.current = null;
       },
     });
+  }
+
+  function resetData() {
+    dbRef.current = null;
+    setTables(SEED_TABLE_INFO);
   }
 
   function resetProject() {
@@ -140,7 +151,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
       <div className="sql-workspace">
         {showSchema && (
           <aside className="sql-side sql-schema" aria-label="Database schema">
-            {SEED_TABLES.map((table) => (
+            {tables.map((table) => (
               <div className="sql-schema-table" key={table.name}>
                 <div className="sql-schema-title">
                   <IconTable size={18} />
@@ -231,12 +242,22 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
           <aside className="sql-side sql-tables" aria-label="Available tables">
             <div className="sql-pane-header">
               <span className="sql-pane-title">Available Tables</span>
+              <button className="sql-clear sql-reset" onClick={resetData} disabled={running} title="Restore the original sample tables">
+                <IconRotateCcw size={12} />
+                Reset data
+              </button>
             </div>
             <div className="sql-tables-body">
-              {SEED_TABLES.map((table) => (
+              {tables.length === 0 && <div className="sql-empty">The database has no tables.</div>}
+              {tables.map((table) => (
                 <div className="sql-data-table" key={table.name}>
                   <h4>{table.name}</h4>
                   <ResultTable columns={table.columns.map((c) => c.name)} rows={table.rows} />
+                  {table.totalRows > table.rows.length && (
+                    <div className="sql-result-meta">
+                      Showing first {table.rows.length} of {table.totalRows} rows
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -246,7 +267,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
 
       {pendingIssues && <SqlConfirmDialog issues={pendingIssues} onConfirm={executeRun} onCancel={() => setPendingIssues(null)} />}
 
-      <AiHelpWidget language={lang.label} code={`${SEED_SCHEMA_COMMENT}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
+      <AiHelpWidget language={lang.label} code={`${describeSchema(tables)}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
     </div>
   );
 }

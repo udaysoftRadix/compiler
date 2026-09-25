@@ -1,9 +1,10 @@
-// Single source of truth for the preloaded SQL tables: the UI panels render
-// SEED_TABLES directly, and SQL_SEED (generated from it) is what the worker
-// runs against each fresh in-memory database before the user's script.
+// Single source of truth for the preloaded SQL tables: the UI shows them
+// (SEED_TABLE_INFO) until the first run, and SQL_SEED (generated from
+// SEED_TABLES) is what the worker runs to build a fresh database, i.e. on the
+// first run and after "Reset data".
 export interface SeedColumn {
   name: string;
-  type: 'INTEGER' | 'TEXT';
+  type: string;
   primaryKey?: boolean;
   references?: string;
 }
@@ -12,6 +13,15 @@ export interface SeedTable {
   name: string;
   columns: SeedColumn[];
   rows: (string | number)[][];
+}
+
+// What the UI panels render: the seed tables at first, then a snapshot of the
+// live database after every run (so user-created tables and edits show up).
+export interface TableInfo {
+  name: string;
+  columns: { name: string; type: string; primaryKey?: boolean }[];
+  rows: unknown[][];
+  totalRows: number;
 }
 
 export const SEED_TABLES: SeedTable[] = [
@@ -65,6 +75,8 @@ export const SEED_TABLES: SeedTable[] = [
   },
 ];
 
+export const SEED_TABLE_INFO: TableInfo[] = SEED_TABLES.map((t) => ({ ...t, totalRows: t.rows.length }));
+
 function literal(value: string | number): string {
   return typeof value === 'number' ? String(value) : `'${value.replace(/'/g, "''")}'`;
 }
@@ -79,9 +91,11 @@ function tableSql(table: SeedTable): string {
 
 export const SQL_SEED = SEED_TABLES.map(tableSql).join('\n\n');
 
-// Given to the AI assistant so it knows the schema even if the user deletes
-// the comment from their script.
-export const SEED_SCHEMA_COMMENT = [
-  '-- Preloaded tables (recreated on every run):',
-  ...SEED_TABLES.map((t) => `--   ${t.name}(${t.columns.map((c) => c.name).join(', ')})`),
-].join('\n');
+// Given to the AI assistant so it knows the current schema even if the user
+// deletes the comment from their script.
+export function describeSchema(tables: TableInfo[]): string {
+  return [
+    '-- Tables currently in the database (changes persist between runs until "Reset data"):',
+    ...tables.map((t) => `--   ${t.name}(${t.columns.map((c) => c.name).join(', ')})`),
+  ].join('\n');
+}

@@ -103,11 +103,16 @@ modules through a small CommonJS-style `require()` so local files can
 on SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js))
 inside a Web Worker. It gets its own layout: a schema sidebar (left), the
 editor with `SELECT` results rendered as real tables (centre), and an
-"Available Tables" data panel (right); both side panels can be toggled. Every
-Run starts from a fresh in-memory database preloaded with `Customers`,
-`Orders` and `Shippings` (defined in `src/compiler/sqlSeed.ts`, which drives
-both the UI panels and the seed SQL), so changes never carry over. DML reports
-rows affected, an error stops the script (keeping earlier output), and a 10s
+"Available Tables" data panel (right); both side panels can be toggled. The
+database starts preloaded with `Customers`, `Orders` and `Shippings` (defined
+in `src/compiler/sqlSeed.ts`) and **persists between runs**: after each run the
+worker returns the SQLite database file, which is passed into the next run,
+and both panels re-render from a snapshot of it (so edits and any tables you
+create show up). A "Reset data" button restores the sample tables; reloading
+the page does too. Because state persists, re-running a `CREATE TABLE` for an
+existing table errors like a normal database. A stopped or timed-out run
+leaves the data unchanged. DML reports rows affected, an error stops the script
+(earlier statements keep their effect), and a 10s
 hard timeout kills runaway queries. Scripts that `INSERT`/`UPDATE`/`DELETE`/`DROP`/`ALTER`
 ask for confirmation first (Supabase-style dialog, with an extra warning for
 `UPDATE`/`DELETE` without a `WHERE`); the check lives in
