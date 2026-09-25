@@ -1,4 +1,4 @@
-# Online Code Compiler — React, JavaScript & 25 Other Languages
+# Online Code Compiler — React, JavaScript & 26 Other Languages
 
 An in-browser coding platform with several execution models suited to what
 each language is for. Every mode defaults to a plain **Hello World** on
@@ -18,9 +18,9 @@ first visit.
   page — a visible **Stop** button and an 8s hard timeout ("time limit
   exceeded") both recover from it.
 - **`/compiler/:language`** — the same judge-style Input/Output/Run UI, for
-  **25 other languages**: C, C++, C#, Java, Kotlin, Python, Ruby, Perl, Lua,
+  **26 other languages**: C, C++, C#, Java, Kotlin, Python, Ruby, Perl, Lua,
   Go, Rust, Swift, Objective-C, D, Haskell, OCaml, Pascal, Ada, Dart,
-  Crystal, Julia, Zig, COBOL, F#, and Visual Basic .NET. A language switcher
+  Crystal, Julia, Zig, COBOL, F#, Visual Basic .NET, and SQL. A language switcher
   in the toolbar jumps straight to any of them. `/c` redirects here for
   backward compatibility. Real compilation for this many languages can't
   happen client-side without shipping a huge native toolchain per language,
@@ -99,6 +99,13 @@ modules through a small CommonJS-style `require()` so local files can
   events back to the page for the Output panel. Stop (or the timeout)
   terminates the worker outright.
 
+**SQL** is the exception: Compiler Explorer has no SQL, so it runs locally
+on SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js))
+inside a Web Worker. Each Run executes the script against a fresh in-memory
+database; `SELECT` results render as text tables, DML reports rows affected,
+an error stops the script (keeping earlier output), and a 10s hard timeout
+kills runaway queries. No network or Input box is needed for it.
+
 **The other-languages mode** works differently since it needs real
 compilers: on Run, the source and Input box text are POSTed to Compiler
 Explorer's execute API (`https://godbolt.org/api/compiler/<id>/compile`,
@@ -139,7 +146,7 @@ npm run preview
   mounted at `/compiler/:language`; falls back to C on an unknown language id
 - `src/data/reactTemplates.ts` / `jsTemplates.ts` — starter templates for
   React and JS
-- `src/data/languages.ts` — the 25 supported languages: route id, Compiler
-  Explorer compiler id, Monaco syntax-highlighting id, filename, and a
+- `src/data/languages.ts` — the 26 supported languages: route id, Compiler
+  Explorer compiler id (or `runtime: 'sqlite'` for SQL), Monaco syntax-highlighting id, filename, and a
   verified Hello World template for each
 - `src/App.tsx` — router shell (`react-router-dom`)

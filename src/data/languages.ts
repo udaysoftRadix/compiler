@@ -1,6 +1,5 @@
-export interface LanguageDef {
+interface BaseLanguageDef {
   id: string;
-  compilerId: string;
   label: string;
   icon: string;
   monacoLanguage: string;
@@ -8,7 +7,11 @@ export interface LanguageDef {
   template: string;
 }
 
-// Every entry here was verified with a real "Hello, World!" run against
+// Compiler Explorer has no SQL, so SQL runs locally on SQLite (sql.js) instead.
+export type LanguageDef = BaseLanguageDef &
+  ({ runtime?: 'compiler-explorer'; compilerId: string } | { runtime: 'sqlite'; compilerId?: undefined });
+
+// Every entry here except SQL was verified with a real "Hello, World!" run against
 // Compiler Explorer's (https://godbolt.org) public execute API, including
 // the quirks some of these needed (Java's public class must be un-public
 // since the source isn't literally named Main.java; Zig's std.io.getStdOut
@@ -318,6 +321,27 @@ pub fn main() !void {
         Console.WriteLine("Hello, World!")
     End Sub
 End Module
+`,
+  },
+  {
+    id: 'sql',
+    runtime: 'sqlite',
+    label: 'SQL (SQLite)',
+    icon: 'DB',
+    monacoLanguage: 'sql',
+    fileName: 'query.sql',
+    template: `CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  age INTEGER
+);
+
+INSERT INTO users (name, age) VALUES
+  ('Alice', 30),
+  ('Bob', 25),
+  ('Carol', 35);
+
+SELECT * FROM users ORDER BY age;
 `,
   },
 ];

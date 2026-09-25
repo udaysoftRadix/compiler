@@ -6,6 +6,7 @@ import { InputPanel } from '../components/InputPanel';
 import { OutputPanel } from '../components/OutputPanel';
 import { AiHelpWidget } from '../components/AiHelpWidget';
 import { runOnCompilerExplorer, type RunController } from '../compiler/runOnCompilerExplorer';
+import { runSql } from '../compiler/runSql';
 import { getLanguage, defaultLanguageId, type LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import type { ConsoleEntry } from '../types';
@@ -92,14 +93,17 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
     setElapsedMs(null);
     setStatus('running');
 
-    runControllerRef.current = runOnCompilerExplorer(lang.compilerId, code, input, {
-      onConsole: (level, text) => appendOutput(level, text),
-      onDone: ({ elapsedMs: ms, timedOut }) => {
+    const callbacks = {
+      onConsole: appendOutput,
+      onDone: ({ elapsedMs: ms, timedOut }: { elapsedMs: number; timedOut: boolean }) => {
         setElapsedMs(ms);
         setStatus(timedOut ? 'timeout' : 'done');
         runControllerRef.current = null;
       },
-    });
+    };
+
+    runControllerRef.current =
+      lang.runtime === 'sqlite' ? runSql(code, callbacks) : runOnCompilerExplorer(lang.compilerId, code, input, callbacks);
   }
 
   function handleStop() {
@@ -197,7 +201,9 @@ function LanguageWorkspace({ lang }: { lang: LanguageDef }) {
         <div className="divider" onPointerDown={onDividerPointerDown} />
 
         <div className="pane io-column" style={{ width: `${100 - splitPercent}%` }}>
-          <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nThis is fed to your program as stdin.'} />
+          {lang.runtime !== 'sqlite' && (
+            <InputPanel value={input} onChange={setInput} placeholder={'Type input here, one value per line.\nThis is fed to your program as stdin.'} />
+          )}
           <OutputPanel entries={output} status={status} elapsedMs={elapsedMs} onClear={() => setOutput([])} />
         </div>
       </div>
