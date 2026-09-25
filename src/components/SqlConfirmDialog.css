@@ -6,147 +6,174 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(5, 6, 10, 0.62);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
 }
 
 .sql-confirm {
-  width: 460px;
+  --badge-bg: #d9993e;
+  width: 570px;
   max-width: 100%;
   max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
-  background: #12141c;
-  border: 1px solid #262a3a;
-  border-radius: 14px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-  padding: 20px 22px 18px;
+  overflow: hidden;
+  background: #1c1c1c;
+  border: 1px solid #2f2f2f;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  color: #ededed;
 }
 
+.sql-confirm p,
+.sql-confirm h3 {
+  margin: 0;
+}
+
+/* Header */
 .sql-confirm-header {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 20px;
+  min-height: 49px;
+  border-bottom: 1px solid #2f2f2f;
+  flex-shrink: 0;
 }
 
 .sql-confirm-header h3 {
-  margin: 0;
   font-size: 15px;
-  font-weight: 600;
-  color: #f1f5f9;
+  font-weight: 400;
+  color: #f5f5f5;
 }
 
-.sql-confirm-header p {
-  margin: 4px 0 0;
-  font-size: 12.5px;
-  color: #94a3b8;
+.sql-confirm-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #8a8a8a;
 }
 
-.sql-confirm-icon {
+.sql-confirm-close:hover {
+  color: #ededed;
+  background: #2a2a2a;
+}
+
+/* Amber banner */
+.sql-confirm-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background: #2a1a08;
+  border-bottom: 1px solid #4a3110;
+  flex-shrink: 0;
+}
+
+.sql-confirm-badge {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  background: var(--badge-bg);
+  color: #2a1a08;
 }
 
-.sql-confirm-icon.danger {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.12);
+.sql-confirm-banner-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #fafafa;
 }
 
-.sql-confirm-list {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
+.sql-confirm-banner-text {
+  margin-top: 2px !important;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #b3a898;
+}
+
+/* Issue cards */
+.sql-confirm-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 16px 20px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #2e3244 transparent;
+  scrollbar-color: #3a3a3a transparent;
 }
 
-.sql-confirm-list li {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 9px 12px;
-  background: #171a26;
-  border: 1px solid #232634;
-  border-left: 3px solid #fbbf24;
-  border-radius: 8px;
+.sql-confirm-card {
+  padding: 14px 16px;
+  background: #232323;
+  border: 1px solid #333;
+  border-radius: 7px;
 }
 
-.sql-confirm-list li.danger {
-  border-left-color: #f87171;
-}
-
-.sql-confirm-summary {
+.sql-confirm-card-title {
   font-size: 13px;
-  color: #e2e8f0;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #fafafa;
 }
 
-.sql-confirm-warning {
-  font-size: 12px;
-  color: #fca5a5;
+.sql-confirm-card-text {
+  margin-top: 2px !important;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #8f8f8f;
 }
 
-.sql-confirm-note {
-  margin: 14px 0 0;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.sql-confirm-actions {
+/* Footer */
+.sql-confirm-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 18px;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid #2f2f2f;
+  flex-shrink: 0;
 }
 
-.sql-confirm-actions button {
-  padding: 8px 16px;
-  border-radius: 8px;
+.sql-confirm-footer button {
+  padding: 7px 14px;
+  border-radius: 6px;
   font-size: 13px;
-  font-weight: 500;
-  border: 1px solid #2e3244;
-  transition: background 0.12s ease;
+  border: 1px solid #3a3a3a;
+  transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .sql-confirm-cancel {
-  background: transparent;
-  color: #cbd5e1;
+  background: #262626;
+  color: #ededed;
 }
 
 .sql-confirm-cancel:hover {
-  background: #1e2130;
+  background: #303030;
 }
 
 .sql-confirm-run {
-  background: #4f46e5;
-  border-color: #4f46e5 !important;
-  color: #fff;
+  background: #2a1a08;
+  border-color: #8a5a1c !important;
+  color: #f2b661;
 }
 
 .sql-confirm-run:hover {
-  background: #4338ca;
+  background: #3a2409;
+  border-color: #b57a26 !important;
 }
 
-.sql-confirm-run.danger {
-  background: #dc2626;
-  border-color: #dc2626 !important;
-}
-
-.sql-confirm-run.danger:hover {
-  background: #b91c1c;
-}
-
-.sql-confirm-actions button:focus-visible {
-  outline: 2px solid #a5b4fc;
+.sql-confirm button:focus-visible {
+  outline: 2px solid #d9993e;
   outline-offset: 2px;
 }

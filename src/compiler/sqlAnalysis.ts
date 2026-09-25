@@ -3,14 +3,13 @@
 // SQL parser): comments and string literals are blanked out first so text
 // like 'delete' never triggers it, then each statement is classified by its
 // leading keyword.
-export type SqlChangeKind = 'insert' | 'update' | 'delete' | 'drop' | 'alter';
-
-export interface SqlChange {
-  kind: SqlChangeKind;
-  summary: string;
-  destructive: boolean;
-  warning?: string;
+export interface SqlIssue {
+  id: string;
+  title: string;
+  description: string;
 }
+
+type Kind = 'insert' | 'update' | 'delete' | 'drop' | 'alter';
 
 function stripNoise(sql: string): string {
   return sql
@@ -20,11 +19,7 @@ function stripNoise(sql: string): string {
     .replace(/"([^"]*)"|`([^`]*)`|\[([^\]]*)\]/g, (_, a, b, c) => (a ?? b ?? c ?? '').replace(/\W+/g, '_'));
 }
 
-function tableOf(statement: string, pattern: RegExp): string {
-  return statement.match(pattern)?.[1] ?? 'a table';
-}
-
-function classify(statement: string): SqlChange | null {
+function classify(statement: string): { kind: Kind; noWhere: boolean } | null {
   let text = statement;
   let first = text.match(/^\s*(\w+)/)?.[1]?.toLowerCase();
   if (!first) return null;
@@ -41,44 +36,65 @@ function classify(statement: string): SqlChange | null {
 
   switch (first) {
     case 'insert':
-    case 'replace': {
-      const table = tableOf(text, /\binto\s+([\w.]+)/i);
-      return { kind: 'insert', summary: `Adds rows to ${table}`, destructive: false };
-    }
-    case 'update': {
-      const table = tableOf(text, /^\s*update\s+(?:or\s+\w+\s+)?([\w.]+)/i);
-      return {
-        kind: 'update',
-        summary: `Updates rows in ${table}`,
-        destructive: noWhere,
-        warning: noWhere ? `No WHERE clause: every row in ${table} will be changed.` : undefined,
-      };
-    }
-    case 'delete': {
-      const table = tableOf(text, /\bfrom\s+([\w.]+)/i);
-      return {
-        kind: 'delete',
-        summary: `Deletes rows from ${table}`,
-        destructive: true,
-        warning: noWhere ? `No WHERE clause: every row in ${table} will be deleted.` : undefined,
-      };
-    }
-    case 'drop': {
-      const m = text.match(/^\s*drop\s+(\w+)\s+(?:if\s+exists\s+)?([\w.]+)/i);
-      return { kind: 'drop', summary: `Drops ${m?.[1]?.toLowerCase() ?? 'object'} ${m?.[2] ?? ''}`.trim(), destructive: true };
-    }
-    case 'alter': {
-      const table = tableOf(text, /^\s*alter\s+table\s+([\w.]+)/i);
-      return { kind: 'alter', summary: `Alters the structure of ${table}`, destructive: false };
-    }
+    case 'replace':
+      return { kind: 'insert', noWhere: false };
+    case 'update':
+      return { kind: 'update', noWhere };
+    case 'delete':
+      return { kind: 'delete', noWhere };
+    case 'drop':
+      return { kind: 'drop', noWhere: false };
+    case 'alter':
+      return { kind: 'alter', noWhere: false };
     default:
       return null;
   }
 }
 
-export function analyzeSql(source: string): SqlChange[] {
-  return stripNoise(source)
+export function analyzeSql(source: string): SqlIssue[] {
+  const statements = stripNoise(source)
     .split(';')
     .map(classify)
-    .filter((change): change is SqlChange => change !== null);
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+
+  const issues: SqlIssue[] = [];
+  const add = (issue: SqlIssue) => {
+    if (!issues.some((existing) => existing.id === issue.id)) issues.push(issue);
+  };
+
+  if (statements.some((s) => s.kind === 'delete' || s.kind === 'drop')) {
+    add({
+      id: 'destructive',
+      title: 'Query has destructive operation',
+      description: 'Make sure you are not accidentally removing something important.',
+    });
+  }
+
+  for (const s of statements) {
+    if ((s.kind === 'update' || s.kind === 'delete') && s.noWhere) {
+      add({
+        id: `no-where-${s.kind}`,
+        title: `Query uses ${s.kind} without a where clause`,
+        description: `Without a where clause, this could ${s.kind} all rows in the table.`,
+      });
+    }
+  }
+
+  if (statements.some((s) => s.kind === 'insert' || s.kind === 'update')) {
+    add({
+      id: 'modifies',
+      title: 'Query modifies data',
+      description: 'This query adds or changes rows. Make sure that is what you intended.',
+    });
+  }
+
+  if (statements.some((s) => s.kind === 'alter')) {
+    add({
+      id: 'alter',
+      title: 'Query alters a table',
+      description: 'This changes the structure of an existing table. Make sure that is what you intended.',
+    });
+  }
+
+  return issues;
 }

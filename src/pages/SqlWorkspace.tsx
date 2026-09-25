@@ -8,7 +8,7 @@ import { statusLabel } from '../utils/statusLabel';
 import { IconPanelLeft, IconPanelRight, IconPlay, IconTable } from '../components/icons';
 import { runSql, type SqlResult, type SqlRunController } from '../compiler/runSql';
 import { SEED_SCHEMA_COMMENT, SEED_TABLES } from '../compiler/sqlSeed';
-import { analyzeSql, type SqlChange } from '../compiler/sqlAnalysis';
+import { analyzeSql, type SqlIssue } from '../compiler/sqlAnalysis';
 import type { LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import './SqlWorkspace.css';
@@ -51,7 +51,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
   const [showSchema, setShowSchema] = useState(() => window.innerWidth > 1000);
   const [showTables, setShowTables] = useState(() => window.innerWidth > 1000);
-  const [pendingChanges, setPendingChanges] = useState<SqlChange[] | null>(null);
+  const [pendingIssues, setPendingIssues] = useState<SqlIssue[] | null>(null);
   const controllerRef = useRef<SqlRunController | null>(null);
 
   useEffect(() => {
@@ -61,14 +61,14 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   useEffect(() => () => controllerRef.current?.stop(), []);
 
   function handleRun() {
-    if (pendingChanges) return;
-    const changes = analyzeSql(code);
-    if (changes.length > 0) setPendingChanges(changes);
+    if (pendingIssues) return;
+    const issues = analyzeSql(code);
+    if (issues.length > 0) setPendingIssues(issues);
     else executeRun();
   }
 
   function executeRun() {
-    setPendingChanges(null);
+    setPendingIssues(null);
     controllerRef.current?.stop();
     setResults([]);
     setElapsedMs(null);
@@ -244,7 +244,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
         )}
       </div>
 
-      {pendingChanges && <SqlConfirmDialog changes={pendingChanges} onConfirm={executeRun} onCancel={() => setPendingChanges(null)} />}
+      {pendingIssues && <SqlConfirmDialog issues={pendingIssues} onConfirm={executeRun} onCancel={() => setPendingIssues(null)} />}
 
       <AiHelpWidget language={lang.label} code={`${SEED_SCHEMA_COMMENT}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
     </div>
