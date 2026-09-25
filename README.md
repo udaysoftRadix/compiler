@@ -108,7 +108,10 @@ Run starts from a fresh in-memory database preloaded with `Customers`,
 `Orders` and `Shippings` (defined in `src/compiler/sqlSeed.ts`, which drives
 both the UI panels and the seed SQL), so changes never carry over. DML reports
 rows affected, an error stops the script (keeping earlier output), and a 10s
-hard timeout kills runaway queries. No network or Input box is needed.
+hard timeout kills runaway queries. Scripts that `INSERT`/`UPDATE`/`DELETE`/`DROP`/`ALTER`
+ask for confirmation first (Supabase-style dialog, with an extra warning for
+`UPDATE`/`DELETE` without a `WHERE`); the check lives in
+`src/compiler/sqlAnalysis.ts`. No network or Input box is needed.
 
 **The other-languages mode** works differently since it needs real
 compilers: on Run, the source and Input box text are POSTed to Compiler

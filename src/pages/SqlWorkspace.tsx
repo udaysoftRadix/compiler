@@ -3,10 +3,12 @@ import { Toolbar } from '../components/Toolbar';
 import { EditorPane } from '../components/EditorPane';
 import { ResultTable } from '../components/ResultTable';
 import { AiHelpWidget } from '../components/AiHelpWidget';
+import { SqlConfirmDialog } from '../components/SqlConfirmDialog';
 import { statusLabel } from '../utils/statusLabel';
 import { IconPanelLeft, IconPanelRight, IconPlay, IconTable } from '../components/icons';
 import { runSql, type SqlResult, type SqlRunController } from '../compiler/runSql';
 import { SEED_SCHEMA_COMMENT, SEED_TABLES } from '../compiler/sqlSeed';
+import { analyzeSql, type SqlChange } from '../compiler/sqlAnalysis';
 import type { LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
 import './SqlWorkspace.css';
@@ -49,6 +51,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   const [elapsedMs, setElapsedMs] = useState<number | null>(null);
   const [showSchema, setShowSchema] = useState(() => window.innerWidth > 1000);
   const [showTables, setShowTables] = useState(() => window.innerWidth > 1000);
+  const [pendingChanges, setPendingChanges] = useState<SqlChange[] | null>(null);
   const controllerRef = useRef<SqlRunController | null>(null);
 
   useEffect(() => {
@@ -58,6 +61,14 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   useEffect(() => () => controllerRef.current?.stop(), []);
 
   function handleRun() {
+    if (pendingChanges) return;
+    const changes = analyzeSql(code);
+    if (changes.length > 0) setPendingChanges(changes);
+    else executeRun();
+  }
+
+  function executeRun() {
+    setPendingChanges(null);
     controllerRef.current?.stop();
     setResults([]);
     setElapsedMs(null);
@@ -232,6 +243,8 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
           </aside>
         )}
       </div>
+
+      {pendingChanges && <SqlConfirmDialog changes={pendingChanges} onConfirm={executeRun} onCancel={() => setPendingChanges(null)} />}
 
       <AiHelpWidget language={lang.label} code={`${SEED_SCHEMA_COMMENT}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
     </div>
