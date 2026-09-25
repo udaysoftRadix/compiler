@@ -11,6 +11,7 @@ import { SEED_TABLE_INFO, describeSchema, type TableInfo } from '../compiler/sql
 import { analyzeSql, type SqlIssue } from '../compiler/sqlAnalysis';
 import type { LanguageDef } from '../data/languages';
 import { decodeFromHash, encodeToHash } from '../utils/share';
+import { clearSqlState, loadSqlState, saveSqlState } from '../utils/sqlStorage';
 import './SqlWorkspace.css';
 
 interface SharedPayload {
@@ -52,7 +53,8 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   const [showSchema, setShowSchema] = useState(() => window.innerWidth > 1000);
   const [showTables, setShowTables] = useState(() => window.innerWidth > 1000);
   const [pendingIssues, setPendingIssues] = useState<SqlIssue[] | null>(null);
-  const [tables, setTables] = useState<TableInfo[]>(SEED_TABLE_INFO);
+  // null until the saved database has been read from IndexedDB.
+  const [tables, setTables] = useState<TableInfo[] | null>(null);
   const dbRef = useRef<Uint8Array | null>(null);
   const controllerRef = useRef<SqlRunController | null>(null);
 
@@ -62,8 +64,20 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
 
   useEffect(() => () => controllerRef.current?.stop(), []);
 
+  useEffect(() => {
+    let cancelled = false;
+    loadSqlState().then((saved) => {
+      if (cancelled) return;
+      dbRef.current = saved?.db ?? null;
+      setTables(saved?.tables ?? SEED_TABLE_INFO);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function handleRun() {
-    if (pendingIssues) return;
+    if (pendingIssues || tables === null) return;
     const issues = analyzeSql(code);
     if (issues.length > 0) setPendingIssues(issues);
     else executeRun();
@@ -80,6 +94,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
       onSnapshot: ({ tables: next, db }) => {
         dbRef.current = db;
         setTables(next);
+        void saveSqlState({ db, tables: next });
       },
       onDone: ({ elapsedMs: ms, timedOut }) => {
         setElapsedMs(ms);
@@ -92,6 +107,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
   function resetData() {
     dbRef.current = null;
     setTables(SEED_TABLE_INFO);
+    void clearSqlState();
   }
 
   function resetProject() {
@@ -140,7 +156,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
               ■ Stop
             </button>
           ) : (
-            <button className="run-btn sql-run-btn" onClick={handleRun}>
+            <button className="run-btn sql-run-btn" onClick={handleRun} disabled={tables === null}>
               <IconPlay size={12} />
               Run SQL
             </button>
@@ -151,7 +167,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
       <div className="sql-workspace">
         {showSchema && (
           <aside className="sql-side sql-schema" aria-label="Database schema">
-            {tables.map((table) => (
+            {(tables ?? []).map((table) => (
               <div className="sql-schema-table" key={table.name}>
                 <div className="sql-schema-title">
                   <IconTable size={18} />
@@ -248,8 +264,8 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
               </button>
             </div>
             <div className="sql-tables-body">
-              {tables.length === 0 && <div className="sql-empty">The database has no tables.</div>}
-              {tables.map((table) => (
+              {tables?.length === 0 && <div className="sql-empty">The database has no tables.</div>}
+              {(tables ?? []).map((table) => (
                 <div className="sql-data-table" key={table.name}>
                   <h4>{table.name}</h4>
                   <ResultTable columns={table.columns.map((c) => c.name)} rows={table.rows} />
@@ -267,7 +283,7 @@ export function SqlWorkspace({ lang }: { lang: LanguageDef }) {
 
       {pendingIssues && <SqlConfirmDialog issues={pendingIssues} onConfirm={executeRun} onCancel={() => setPendingIssues(null)} />}
 
-      <AiHelpWidget language={lang.label} code={`${describeSchema(tables)}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
+      <AiHelpWidget language={lang.label} code={`${describeSchema(tables ?? [])}\n\n${code}`} consoleOutput={describeForAi(results.slice(-20))} />
     </div>
   );
 }
