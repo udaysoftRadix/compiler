@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
   backdrop-filter: blur(2px);
 }
 
@@ -18,11 +18,11 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #1c1c1c;
-  border: 1px solid #2f2f2f;
+  background: var(--dlg-bg);
+  border: 1px solid var(--dlg-border);
   border-radius: 12px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-  color: #ededed;
+  box-shadow: 0 24px 60px rgba(var(--shadow-rgb), calc(0.6 * var(--shadow-k)));
+  color: var(--dlg-text);
 }
 
 .sql-confirm p,
@@ -38,14 +38,14 @@
   gap: 16px;
   padding: 0 20px;
   min-height: 49px;
-  border-bottom: 1px solid #2f2f2f;
+  border-bottom: 1px solid var(--dlg-border);
   flex-shrink: 0;
 }
 
 .sql-confirm-header h3 {
   font-size: 15px;
   font-weight: 400;
-  color: #f5f5f5;
+  color: var(--dlg-text);
 }
 
 .sql-confirm-close {
@@ -58,12 +58,12 @@
   background: none;
   border: none;
   border-radius: 6px;
-  color: #8a8a8a;
+  color: var(--dlg-muted);
 }
 
 .sql-confirm-close:hover {
-  color: #ededed;
-  background: #2a2a2a;
+  color: var(--dlg-text);
+  background: var(--dlg-hover);
 }
 
 /* Amber banner */
@@ -72,8 +72,8 @@
   align-items: flex-start;
   gap: 16px;
   padding: 16px;
-  background: #2a1a08;
-  border-bottom: 1px solid #4a3110;
+  background: var(--dlg-banner-bg);
+  border-bottom: 1px solid var(--dlg-banner-border);
   flex-shrink: 0;
 }
 
@@ -93,14 +93,14 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.45;
-  color: #fafafa;
+  color: var(--text-strong);
 }
 
 .sql-confirm-banner-text {
   margin-top: 2px !important;
   font-size: 13px;
   line-height: 1.45;
-  color: #b3a898;
+  color: var(--dlg-banner-text);
 }
 
 /* Issue cards */
@@ -111,13 +111,13 @@
   padding: 16px 20px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3a transparent;
+  scrollbar-color: var(--dlg-border-2) transparent;
 }
 
 .sql-confirm-card {
   padding: 14px 16px;
-  background: #232323;
-  border: 1px solid #333;
+  background: var(--dlg-card);
+  border: 1px solid var(--dlg-card-border);
   border-radius: 7px;
 }
 
@@ -125,14 +125,14 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.45;
-  color: #fafafa;
+  color: var(--text-strong);
 }
 
 .sql-confirm-card-text {
   margin-top: 2px !important;
   font-size: 13px;
   line-height: 1.45;
-  color: #8f8f8f;
+  color: var(--dlg-muted);
 }
 
 /* Footer */
@@ -141,7 +141,7 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 14px 20px;
-  border-top: 1px solid #2f2f2f;
+  border-top: 1px solid var(--dlg-border);
   flex-shrink: 0;
 }
 
@@ -149,28 +149,28 @@
   padding: 7px 14px;
   border-radius: 6px;
   font-size: 13px;
-  border: 1px solid #3a3a3a;
+  border: 1px solid var(--dlg-border-2);
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 
 .sql-confirm-cancel {
-  background: #262626;
-  color: #ededed;
+  background: var(--dlg-btn);
+  color: var(--dlg-text);
 }
 
 .sql-confirm-cancel:hover {
-  background: #303030;
+  background: var(--dlg-btn-hover);
 }
 
 .sql-confirm-run {
-  background: #2a1a08;
-  border-color: #8a5a1c !important;
-  color: #f2b661;
+  background: var(--dlg-banner-bg);
+  border-color: var(--dlg-run-border) !important;
+  color: var(--dlg-run-text);
 }
 
 .sql-confirm-run:hover {
-  background: #3a2409;
-  border-color: #b57a26 !important;
+  background: var(--dlg-run-hover);
+  border-color: var(--dlg-run-border-hover) !important;
 }
 
 .sql-confirm button:focus-visible {

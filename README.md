@@ -48,6 +48,12 @@ first visit.
 ## Features
 
 Shared:
+- **Light & dark themes** — sun/moon toggle in the toolbar. The first visit
+  follows the OS setting; the choice is then remembered. All colors are CSS
+  variables defined in `src/index.css` (dark is the default palette, light is
+  `:root[data-theme='light']`), the Monaco editor switches between `vs` and
+  `vs-dark`, and a tiny inline script in `index.html` applies the theme before
+  first paint to avoid a flash. State lives in `src/hooks/useTheme.ts`.
 - **Monaco-based editor**
 - **Shareable links** (project state compressed into the URL hash),
   **Download**, **Reset** to defaults

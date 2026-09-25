@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
 import type { ProjectFile } from '../types';
+import { useTheme } from '../hooks/useTheme';
 
 interface EditorPaneProps {
   file: ProjectFile;
@@ -29,6 +30,7 @@ function languageForFile(name: string): string {
 }
 
 export function EditorPane({ file, onChange, onRun, language }: EditorPaneProps) {
+  const { theme } = useTheme();
   const onRunRef = useRef(onRun);
   useEffect(() => {
     onRunRef.current = onRun;
@@ -44,7 +46,7 @@ export function EditorPane({ file, onChange, onRun, language }: EditorPaneProps)
       height="100%"
       language={language ?? languageForFile(file.name)}
       value={file.content}
-      theme="vs-dark"
+      theme={theme === 'light' ? 'vs' : 'vs-dark'}
       onChange={(value) => onChange(value ?? '')}
       onMount={handleMount}
       options={{

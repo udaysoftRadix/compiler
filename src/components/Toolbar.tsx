@@ -4,6 +4,8 @@ import { languages } from '../data/languages';
 import { LanguageSelect } from './LanguageSelect';
 import { LanguageIcon } from './LanguageIcon';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { useTheme } from '../hooks/useTheme';
+import { IconMoon, IconSun } from './icons';
 import type { Template } from '../types';
 
 type CompilerMode = 'react' | 'js' | 'lang';
@@ -42,6 +44,7 @@ export function Toolbar({
   const brand = mode === 'lang' ? { icon: <LanguageIcon id={activeLanguageId} size={20} />, label: `${activeLanguageLabel ?? 'Language'} Compiler` } : FIXED_BRAND[mode];
 
   useDocumentTitle(brand.label);
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <div className="toolbar">
@@ -82,6 +85,14 @@ export function Toolbar({
             ))}
           </select>
         )}
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        >
+          {theme === 'dark' ? <IconSun size={15} /> : <IconMoon size={15} />}
+        </button>
         <button onClick={onDownload}>Download</button>
         <button onClick={onShare}>Share</button>
         <button onClick={onReset} className="danger">

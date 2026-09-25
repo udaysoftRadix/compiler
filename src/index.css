@@ -1,6 +1,164 @@
 :root {
-  color-scheme: dark;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Theme tokens. Dark (the default) is the original palette; light is set via
+   <html data-theme="light"> (see src/hooks/useTheme.ts). */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg-page: #0b0d12;
+  --bg-code: #0a0b10;
+  --bg-sunken: #0d0f16;
+  --bg-content: #0e1016;
+  --bg-side: #0f1118;
+  --bg-chrome: #12141c;
+  --bg-chrome-2: #131622;
+  --bg-card: #171a26;
+  --bg-inset: #191c28;
+  --bg-editor: #1e1e1e;
+  --bg-button: #1e2130;
+  --bg-hover-soft: #1e2233;
+  --bg-hover: #2a2e40;
+  --bg-active: #2e3244;
+  --border: #2e3244;
+  --border-subtle: #232634;
+  --border-faint: #1a1d29;
+  --scroll-thumb: #2e3244;
+  --scroll-thumb-hover: #3f4557;
+  --icon-tile: #e8ecf4;
+  --icon-tile-border: transparent;
+
+  --text: #e2e8f0;
+  --text-heading: #f1f5f9;
+  --text-strong: #f8fafc;
+  --text-soft: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --text-dim: #475569;
+
+  --accent-text: #a5b4fc;
+  --accent-text-2: #818cf8;
+  --accent-text-3: #c7d2fe;
+  --accent-border-soft: #3b3f78;
+
+  --ok-text: #86efac;
+  --ok-text-2: #4ade80;
+  --err-text: #fca5a5;
+  --err-text-2: #f87171;
+  --err-overlay-text: #ff8080;
+  --warn-text: #facc15;
+  --warn-text-2: #fbbf24;
+  --code-inline-text: #f0abfc;
+  --info-text: #60a5fa;
+  --overlay-err-bg: rgba(20, 0, 0, 0.95);
+
+  --syn-comment: #6a9955;
+  --syn-string: #ce9178;
+  --syn-number: #b5cea8;
+  --syn-function: #dcdcaa;
+  --syn-keyword: #c586c0;
+
+  --shadow-rgb: 0, 0, 0;
+  --shadow-k: 1;
+  --backdrop: rgba(0, 0, 0, 0.6);
+
+  --dlg-bg: #1c1c1c;
+  --dlg-border: #2f2f2f;
+  --dlg-border-2: #3a3a3a;
+  --dlg-card: #232323;
+  --dlg-card-border: #333;
+  --dlg-btn: #262626;
+  --dlg-btn-hover: #303030;
+  --dlg-hover: #2a2a2a;
+  --dlg-text: #ededed;
+  --dlg-muted: #8f8f8f;
+  --dlg-banner-text: #b3a898;
+  --dlg-banner-bg: #2a1a08;
+  --dlg-banner-border: #4a3110;
+  --dlg-run-hover: #3a2409;
+  --dlg-run-border: #8a5a1c;
+  --dlg-run-border-hover: #b57a26;
+  --dlg-run-text: #f2b661;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-page: #eef1f7;
+  --bg-code: #f6f8fc;
+  --bg-sunken: #eef1f8;
+  --bg-content: #ffffff;
+  --bg-side: #f8f9fd;
+  --bg-chrome: #f3f5fa;
+  --bg-chrome-2: #eceff6;
+  --bg-card: #ffffff;
+  --bg-inset: #e9edf5;
+  --bg-editor: #ffffff;
+  --bg-button: #ffffff;
+  --bg-hover-soft: #eef1f9;
+  --bg-hover: #e4e9f3;
+  --bg-active: #dbe1ee;
+  --border: #d3d9e6;
+  --border-subtle: #e2e6ef;
+  --border-faint: #eaedf4;
+  --scroll-thumb: #c3cad9;
+  --scroll-thumb-hover: #a9b2c5;
+  --icon-tile: #f1f4fa;
+  --icon-tile-border: #dbe0eb;
+
+  --text: #1e293b;
+  --text-heading: #0f172a;
+  --text-strong: #0f172a;
+  --text-soft: #334155;
+  --text-muted: #5b6a82;
+  --text-faint: #7d8ba1;
+  --text-dim: #9aa5b8;
+
+  --accent-text: #4338ca;
+  --accent-text-2: #4f46e5;
+  --accent-text-3: #3730a3;
+  --accent-border-soft: #a5b4fc;
+
+  --ok-text: #15803d;
+  --ok-text-2: #16a34a;
+  --err-text: #b91c1c;
+  --err-text-2: #dc2626;
+  --err-overlay-text: #b91c1c;
+  --warn-text: #a16207;
+  --warn-text-2: #b45309;
+  --code-inline-text: #a21caf;
+  --info-text: #2563eb;
+  --overlay-err-bg: rgba(254, 242, 242, 0.97);
+
+  --syn-comment: #008000;
+  --syn-string: #a31515;
+  --syn-number: #098658;
+  --syn-function: #795e26;
+  --syn-keyword: #af00db;
+
+  --shadow-rgb: 15, 23, 42;
+  --shadow-k: 0.32;
+  --backdrop: rgba(15, 23, 42, 0.4);
+
+  --dlg-bg: #ffffff;
+  --dlg-border: #e4e4e7;
+  --dlg-border-2: #d4d4d8;
+  --dlg-card: #fafafa;
+  --dlg-card-border: #e4e4e7;
+  --dlg-btn: #f4f4f5;
+  --dlg-btn-hover: #e9e9ec;
+  --dlg-hover: #ececef;
+  --dlg-text: #18181b;
+  --dlg-muted: #71717a;
+  --dlg-banner-text: #7a5a2a;
+  --dlg-banner-bg: #fff4df;
+  --dlg-banner-border: #f2d9a6;
+  --dlg-run-hover: #ffe8c2;
+  --dlg-run-border: #d99a3a;
+  --dlg-run-border-hover: #b57a26;
+  --dlg-run-text: #9a5b0c;
 }
 
 * {
@@ -12,8 +170,8 @@ body,
 #root {
   height: 100%;
   margin: 0;
-  background: #0b0d12;
-  color: #e2e8f0;
+  background: var(--bg-page);
+  color: var(--text);
 }
 
 button {
